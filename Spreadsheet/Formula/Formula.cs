@@ -41,7 +41,52 @@ namespace Formulas
         /// </summary>
         public Formula(String formula)
         {
+            var tokenList = GetTokens(formula).ToList();
+            var numberOfOpeningParenthesis = 0;
+            var numberOfClosingParenthesis = 0;
+
+            var lpPattern = @"\(";
+            var rpPattern = @"\)";
+            var opPattern = @"[\+\-*/]";
+            var varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
+            var doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
+            var spacePattern = @"\s+";
+
+            if (tokenList.Count == 0)
+            {
+                throw new FormulaFormatException("Formula must have at least one number or variable");
+            }
+
+            if (!Regex.IsMatch(tokenList.ElementAt(0), String.Format("({0}) | ({1}) | ({2})", lpPattern, varPattern, doublePattern)))
+            {
+                throw new FormulaFormatException("The first token of a formula must be a number, a variable, or an opening parenthesis");
+            }
+
+            if (!Regex.IsMatch(tokenList.Last(), String.Format("({0}) | ({1}) | ({2})", rpPattern, varPattern, doublePattern)))
+            {
+                throw new FormulaFormatException("The last token of a formula must be a number, a variable, or a closing parenthesis");
+            }
+
+            foreach (string token in tokenList)
+            {
+                if (token.Equals(lpPattern))
+                {
+                    numberOfOpeningParenthesis++;
+                }
+                else if (token.Equals(rpPattern))
+                {
+                    numberOfClosingParenthesis++;
+                }
+
+
+                if (!Regex.IsMatch(token, String.Format("({0}) | ({1}) | ({2}) | ({3}) | ({4}) | ({5})",
+                    lpPattern, rpPattern, opPattern, varPattern, doublePattern, spacePattern)))
+                {
+                    throw new FormulaFormatException("There cannot be invalid tokens");
+                }
+            }
         }
+
         /// <summary>
         /// Evaluates this Formula, using the Lookup delegate to determine the values of variables.  (The
         /// delegate takes a variable name as a parameter and returns its value (if it has one) or throws

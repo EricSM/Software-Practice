@@ -19,6 +19,8 @@ namespace Formulas
     /// </summary>
     public class Formula
     {
+        public List<string> tokenList { get; private set; } 
+
         /// <summary>
         /// Creates a Formula from a string that consists of a standard infix expression composed
         /// from non-negative floating-point numbers (using C#-like syntax for double/int literals), 
@@ -41,7 +43,7 @@ namespace Formulas
         /// </summary>
         public Formula(String formula)
         {
-            var tokenList = GetTokens(formula).ToList();
+            tokenList = GetTokens(formula).ToList();
             var numberOfOpeningParenthesis = 0;
             var numberOfClosingParenthesis = 0;
             var lastToken = String.Empty;
@@ -58,7 +60,7 @@ namespace Formulas
                 throw new FormulaFormatException("Formula must have at least one number or variable");
             }
 
-            if (!Regex.IsMatch(tokenList.ElementAt(0), String.Format("({0}) | ({1}) | ({2})", lpPattern, varPattern, doublePattern)))
+            if (!Regex.IsMatch(tokenList.First(), String.Format("({0}) | ({1}) | ({2})", lpPattern, varPattern, doublePattern)))
             {
                 throw new FormulaFormatException("The first token of a formula must be a number, a variable, or an opening parenthesis");
             }
@@ -125,6 +127,70 @@ namespace Formulas
         /// </summary>
         public double Evaluate(Lookup lookup)
         {
+            var valueStack = new Stack<double>();
+            var operatorStack = new Stack<string>();
+            double number;
+
+            foreach (string token in tokenList)
+            {
+                if (Double.TryParse(token, out number))
+                {                    
+                    if (Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
+                    {
+                        // TODO: token is a double
+                    }
+                    else
+                    {
+                        valueStack.Push(number);
+                    }
+                }
+                else if (Regex.IsMatch(token, @"[a-zA-Z][0-9a-zA-Z]*"))
+                {
+                    number = lookup(token);
+
+                    if (Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
+                    {
+                        //TODO: token is a variable
+                    }
+                    else
+                    {
+                        valueStack.Push(number);
+                    }                    
+                }
+                else if (Regex.IsMatch(token, @"[\+\-]"))
+                {
+                    // TODO: token is an addition operator
+                    operatorStack.Push(token);
+                }
+                else if (Regex.IsMatch(token, @"[\(*/]"))
+                {
+                    operatorStack.Push(token);
+                }
+                else if (token.Equals(")"))
+                {
+                    // TODO: token is a closing parenthesis
+                    if (Regex.IsMatch(operatorStack.Peek(), @"[\+\-]"))
+                    {
+                    }
+
+                    operatorStack.Pop();
+
+                    if (Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
+                    {
+                    }
+                }
+            }
+
+            if (operatorStack.Count == 0)
+            {
+                //TODO: operator stack is empty
+            }
+            else if (operatorStack.Count > 0)
+            {
+                //TODO: operator stack is not empty
+            }
+
+
             return 0;
         }
 

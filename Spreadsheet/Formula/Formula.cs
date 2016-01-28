@@ -44,6 +44,7 @@ namespace Formulas
             var tokenList = GetTokens(formula).ToList();
             var numberOfOpeningParenthesis = 0;
             var numberOfClosingParenthesis = 0;
+            var lastToken = String.Empty;
 
             var lpPattern = @"\(";
             var rpPattern = @"\)";
@@ -77,13 +78,39 @@ namespace Formulas
                 {
                     numberOfClosingParenthesis++;
                 }
-
-
-                if (!Regex.IsMatch(token, String.Format("({0}) | ({1}) | ({2}) | ({3}) | ({4}) | ({5})",
-                    lpPattern, rpPattern, opPattern, varPattern, doublePattern, spacePattern)))
+                else if (!Regex.IsMatch(token, String.Format("({0}) | ({1}) | ({2}) | ({3})",
+                    opPattern, varPattern, doublePattern, spacePattern)))
                 {
                     throw new FormulaFormatException("There cannot be invalid tokens");
                 }
+                
+                if (numberOfClosingParenthesis > numberOfOpeningParenthesis)
+                {
+                    throw new FormulaFormatException("All closing parentheses must have corresponding opening parenthesis");
+                }
+
+                if (!string.IsNullOrEmpty(lastToken))
+                {
+                    if (Regex.IsMatch(lastToken, String.Format("({0}) | ({1})", lpPattern, opPattern)) &&
+                        !Regex.IsMatch(token, String.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, lpPattern)))
+                    {
+                        throw new FormulaFormatException("An opening parenthesis or an operator must followed by either a " +
+                            "number, a variable, or an opening parenthesis");
+                    }
+                    else if (Regex.IsMatch(lastToken, String.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, rpPattern)) &&
+                            !Regex.IsMatch(token, String.Format("({0}) | ({1})", opPattern, rpPattern)))
+                    {
+                        throw new FormulaFormatException("A number, a variable, or a closing parenthesis must followed by " +
+                            "either an operator or a closing parenthesis");
+                    }
+                }
+
+                lastToken = token;
+            }
+
+            if (!numberOfOpeningParenthesis.Equals(numberOfClosingParenthesis))
+            {
+                throw new FormulaFormatException("Must have equal numbers of opening and closing parentheses");
             }
         }
 

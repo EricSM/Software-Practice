@@ -53,7 +53,6 @@ namespace Formulas
             var opPattern = @"[\+\-*/]";
             var varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
             var doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
-            var spacePattern = @"\s+";
             var ignoreSpaceOption = RegexOptions.IgnorePatternWhitespace;
 
             if (tokenList.Count == 0)
@@ -83,8 +82,8 @@ namespace Formulas
                 {
                     numberOfClosingParenthesis++;
                 }
-                else if (!Regex.IsMatch(token, String.Format("({0}) | ({1}) | ({2}) | ({3})",
-                    opPattern, varPattern, doublePattern, spacePattern), ignoreSpaceOption))
+                else if (!Regex.IsMatch(token, String.Format("({0}) | ({1}) | ({2}) | ({3}) | ({4})",
+                    lpPattern, rpPattern, opPattern, varPattern, doublePattern), ignoreSpaceOption))
                 {
                     throw new FormulaFormatException("There cannot be invalid tokens");
                 }
@@ -141,25 +140,13 @@ namespace Formulas
             {
                 if (Double.TryParse(token, out number))
                 {
-                    if (operatorStack.Count > 0 && Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
+                    if (operatorStack.Count == 0 || !Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
                     {
-                        op = operatorStack.Pop();
-                        if (op.Equals("*"))
-                        {
-                            valueStack.Push(valueStack.Pop() * number);
-                        }
-                        else if (op.Equals("/"))
-                        {
-                            if (number == 0)
-                            {
-                                throw new FormulaEvaluationException("Cannot divide by 0");
-                            }
-                            valueStack.Push(valueStack.Pop() / number);
-                        }
+                        valueStack.Push(number);
                     }
                     else
                     {
-                        valueStack.Push(number);
+                        MultOrDivCurrentAndLastValues(ref valueStack, ref operatorStack, number);
                     }
                 }
                 else if (Regex.IsMatch(token, @"[a-zA-Z][0-9a-zA-Z]*"))
@@ -168,25 +155,13 @@ namespace Formulas
                     {
                         number = lookup(token);
 
-                        if (operatorStack.Count > 0 && Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
+                        if (operatorStack.Count == 0 || !Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
                         {
-                            op = operatorStack.Pop();
-                            if (op.Equals("*"))
-                            {
-                                valueStack.Push(valueStack.Pop() * number);
-                            }
-                            else if (op.Equals("/"))
-                            {
-                                if (number == 0)
-                                {
-                                    throw new FormulaEvaluationException("Cannot divide by 0");
-                                }
-                                valueStack.Push(valueStack.Pop() / number);
-                            }
+                            valueStack.Push(number);
                         }
                         else
                         {
-                            valueStack.Push(number);
+                            MultOrDivCurrentAndLastValues(ref valueStack, ref operatorStack, number);
                         }
                     }
                     catch (UndefinedVariableException e)
@@ -234,6 +209,27 @@ namespace Formulas
             }
 
             return valueStack.Pop();
+        }
+
+        private static void MultOrDivCurrentAndLastValues(ref Stack<double> valueStack, ref Stack<string> operatorStack,
+            double currentValue)
+        {
+            if (operatorStack.Count > 0 && Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
+            {
+                string op = operatorStack.Pop();
+                if (op.Equals("*"))
+                {
+                    valueStack.Push(valueStack.Pop() * currentValue);
+                }
+                else if (op.Equals("/"))
+                {
+                    if (currentValue == 0)
+                    {
+                        throw new FormulaEvaluationException("Cannot divide by 0");
+                    }
+                    valueStack.Push(valueStack.Pop() / currentValue);
+                }
+            }
         }
 
         private static void AddOrSubLastTwoValues(ref Stack<Double> valueStack, ref Stack<string> operatorStack)

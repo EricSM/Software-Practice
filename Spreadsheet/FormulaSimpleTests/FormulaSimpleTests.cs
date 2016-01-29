@@ -110,6 +110,16 @@ namespace FormulaTestCases
         }
 
         /// <summary>
+        /// Stress test utilizing several tokens.
+        /// </summary>
+        [TestMethod]
+        public void StressEvaluate1()
+        {
+            Formula f = new Formula("(x + y) * (z / x) * x / 1.0 * (z * y / x) + 770 - (x - y - z)");
+            Assert.AreEqual(f.Evaluate(Lookup4), 1740.0, 1e-6);
+        }
+
+        /// <summary>
         /// A Lookup method that maps x to 4.0, y to 6.0, and z to 8.0.
         /// All other variables result in an UndefinedVariableException.
         /// </summary>

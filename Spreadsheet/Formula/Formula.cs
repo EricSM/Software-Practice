@@ -19,7 +19,7 @@ namespace Formulas
     /// </summary>
     public class Formula
     {
-        public List<string> tokenList { get; private set; } 
+        private List<string> tokenList;
 
         /// <summary>
         /// Creates a Formula from a string that consists of a standard infix expression composed
@@ -54,18 +54,21 @@ namespace Formulas
             var varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
             var doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
             var spacePattern = @"\s+";
+            var ignoreSpaceOption = RegexOptions.IgnorePatternWhitespace;
 
             if (tokenList.Count == 0)
             {
                 throw new FormulaFormatException("Formula must have at least one number or variable");
             }
 
-            if (!Regex.IsMatch(tokenList.First(), String.Format("({0}) | ({1}) | ({2})", lpPattern, varPattern, doublePattern)))
+            if (!Regex.IsMatch(tokenList.First(), String.Format("({0}) | ({1}) | ({2})", lpPattern, varPattern, doublePattern), 
+                ignoreSpaceOption))
             {
                 throw new FormulaFormatException("The first token of a formula must be a number, a variable, or an opening parenthesis");
             }
 
-            if (!Regex.IsMatch(tokenList.Last(), String.Format("({0}) | ({1}) | ({2})", rpPattern, varPattern, doublePattern)))
+            if (!Regex.IsMatch(tokenList.Last(), String.Format("({0}) | ({1}) | ({2})", rpPattern, varPattern, doublePattern), 
+                ignoreSpaceOption))
             {
                 throw new FormulaFormatException("The last token of a formula must be a number, a variable, or a closing parenthesis");
             }
@@ -81,7 +84,7 @@ namespace Formulas
                     numberOfClosingParenthesis++;
                 }
                 else if (!Regex.IsMatch(token, String.Format("({0}) | ({1}) | ({2}) | ({3})",
-                    opPattern, varPattern, doublePattern, spacePattern)))
+                    opPattern, varPattern, doublePattern, spacePattern), ignoreSpaceOption))
                 {
                     throw new FormulaFormatException("There cannot be invalid tokens");
                 }
@@ -93,14 +96,16 @@ namespace Formulas
 
                 if (!string.IsNullOrEmpty(lastToken))
                 {
-                    if (Regex.IsMatch(lastToken, String.Format("({0}) | ({1})", lpPattern, opPattern)) &&
-                        !Regex.IsMatch(token, String.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, lpPattern)))
+                    if (Regex.IsMatch(lastToken, String.Format("({0}) | ({1})", lpPattern, opPattern), ignoreSpaceOption) &&
+                        !Regex.IsMatch(token, String.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, lpPattern),
+                        ignoreSpaceOption))
                     {
                         throw new FormulaFormatException("An opening parenthesis or an operator must followed by either a " +
                             "number, a variable, or an opening parenthesis");
                     }
-                    else if (Regex.IsMatch(lastToken, String.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, rpPattern)) &&
-                            !Regex.IsMatch(token, String.Format("({0}) | ({1})", opPattern, rpPattern)))
+                    else if (Regex.IsMatch(lastToken, String.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, rpPattern),
+                            ignoreSpaceOption) &&
+                            !Regex.IsMatch(token, String.Format("({0}) | ({1})", opPattern, rpPattern), ignoreSpaceOption))
                     {
                         throw new FormulaFormatException("A number, a variable, or a closing parenthesis must followed by " +
                             "either an operator or a closing parenthesis");
@@ -110,7 +115,7 @@ namespace Formulas
                 lastToken = token;
             }
 
-            if (!numberOfOpeningParenthesis.Equals(numberOfClosingParenthesis))
+            if (numberOfOpeningParenthesis != numberOfClosingParenthesis)
             {
                 throw new FormulaFormatException("Must have equal numbers of opening and closing parentheses");
             }
@@ -129,15 +134,28 @@ namespace Formulas
         {
             var valueStack = new Stack<double>();
             var operatorStack = new Stack<string>();
+            string op;
             double number;
 
             foreach (string token in tokenList)
             {
                 if (Double.TryParse(token, out number))
-                {                    
-                    if (Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
+                {
+                    if (operatorStack.Count > 0 && Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
                     {
-                        // TODO: token is a double
+                        op = operatorStack.Pop();
+                        if (op.Equals("*"))
+                        {
+                            valueStack.Push(valueStack.Pop() * number);
+                        }
+                        else if (op.Equals("/"))
+                        {
+                            if (number == 0)
+                            {
+                                throw new FormulaEvaluationException("Cannot divide by 0");
+                            }
+                            valueStack.Push(valueStack.Pop() / number);
+                        }
                     }
                     else
                     {
@@ -146,20 +164,39 @@ namespace Formulas
                 }
                 else if (Regex.IsMatch(token, @"[a-zA-Z][0-9a-zA-Z]*"))
                 {
-                    number = lookup(token);
+                    try
+                    {
+                        number = lookup(token);
 
-                    if (Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
-                    {
-                        //TODO: token is a variable
+                        if (operatorStack.Count > 0 && Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
+                        {
+                            op = operatorStack.Pop();
+                            if (op.Equals("*"))
+                            {
+                                valueStack.Push(valueStack.Pop() * number);
+                            }
+                            else if (op.Equals("/"))
+                            {
+                                if (number == 0)
+                                {
+                                    throw new FormulaEvaluationException("Cannot divide by 0");
+                                }
+                                valueStack.Push(valueStack.Pop() / number);
+                            }
+                        }
+                        else
+                        {
+                            valueStack.Push(number);
+                        }
                     }
-                    else
+                    catch (UndefinedVariableException e)
                     {
-                        valueStack.Push(number);
+                        throw new FormulaEvaluationException(e.Message);
                     }                    
                 }
                 else if (Regex.IsMatch(token, @"[\+\-]"))
                 {
-                    // TODO: token is an addition operator
+                    AddOrSubLastTwoValues(ref valueStack, ref operatorStack);
                     operatorStack.Push(token);
                 }
                 else if (Regex.IsMatch(token, @"[\(*/]"))
@@ -168,30 +205,51 @@ namespace Formulas
                 }
                 else if (token.Equals(")"))
                 {
-                    // TODO: token is a closing parenthesis
-                    if (Regex.IsMatch(operatorStack.Peek(), @"[\+\-]"))
-                    {
-                    }
+                    AddOrSubLastTwoValues(ref valueStack, ref operatorStack);
 
                     operatorStack.Pop();
 
-                    if (Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
+                    if (operatorStack.Count > 0 && Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
                     {
+                        if (operatorStack.Peek().Equals("*"))
+                        {
+                            operatorStack.Pop();
+                            valueStack.Push(valueStack.Pop() * valueStack.Pop());
+                        }
+                        else if (operatorStack.Peek().Equals("/"))
+                        {
+                            valueStack.Push(1 / valueStack.Pop() * valueStack.Pop());
+                        }
                     }
                 }
             }
 
             if (operatorStack.Count == 0)
             {
-                //TODO: operator stack is empty
+                return valueStack.Pop();
             }
-            else if (operatorStack.Count > 0)
+            else 
             {
-                //TODO: operator stack is not empty
+                AddOrSubLastTwoValues(ref valueStack, ref operatorStack);
             }
 
+            return valueStack.Pop();
+        }
 
-            return 0;
+        private static void AddOrSubLastTwoValues(ref Stack<Double> valueStack, ref Stack<string> operatorStack)
+        {
+            if (operatorStack.Count > 0 && Regex.IsMatch(operatorStack.Peek(), @"[\+\-]"))
+            {
+                string op = operatorStack.Pop();
+                if (op.Equals("+"))
+                {
+                    valueStack.Push(valueStack.Pop() + valueStack.Pop());
+                }
+                else if (op.Equals("-"))
+                {
+                    valueStack.Push(valueStack.Pop() * -1 + valueStack.Pop());
+                }
+            }
         }
 
         /// <summary>
@@ -224,6 +282,7 @@ namespace Formulas
             }
         }
     }
+    
 
     /// <summary>
     /// A Lookup method is one that maps some strings to double values.  Given a string,

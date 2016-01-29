@@ -2,6 +2,9 @@
 // Revised by Joe Zachary, January 2016
 // JLZ Repaired pair of mistakes, January 23, 2016
 
+// Name: Eric Miramontes
+// uNID: u0801584
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -19,7 +22,13 @@ namespace Formulas
     /// </summary>
     public class Formula
     {
-        private List<string> tokenList;
+        /// <summary>
+        /// List of tokens derived from the GetTokens method with invalid tokens removed.
+        /// Tokens are left paren, right paren, one of the four operator symbols, a string
+        /// consisting of a letter followed by zero or more digits and/or letters, and 
+        /// double literals
+        /// </summary>
+        private List<string> _tokenList;
 
         /// <summary>
         /// Creates a Formula from a string that consists of a standard infix expression composed
@@ -43,58 +52,72 @@ namespace Formulas
         /// </summary>
         public Formula(String formula)
         {
-            tokenList = GetTokens(formula).ToList();
+            _tokenList = GetTokens(formula).ToList(); // Use GetTokens method to get list of tokens in formula.
             var numberOfOpeningParenthesis = 0;
             var numberOfClosingParenthesis = 0;
-            var lastToken = String.Empty;
+            var lastToken = String.Empty; // Previous token processed in loop.
 
-            var lpPattern = @"\(";
-            var rpPattern = @"\)";
+            // Patterns for individual tokens
+            var lpPattern = @"\("; 
+            var rpPattern = @"\)"; 
             var opPattern = @"[\+\-*/]";
             var varPattern = @"[a-zA-Z][0-9a-zA-Z]*";
             var doublePattern = @"(?: \d+\.\d* | \d*\.\d+ | \d+ ) (?: e[\+-]?\d+)?";
+
+
+            // Store IgnorePatternWhitespace regex option in a variable for later use.  
+            // Since there can be no whitespace, this will be used in all future regex statements.
             var ignoreSpaceOption = RegexOptions.IgnorePatternWhitespace;
 
-            if (tokenList.Count == 0)
+            // Check if the token list is empty
+            if (_tokenList.Count == 0) 
             {
                 throw new FormulaFormatException("Formula must have at least one number or variable");
             }
 
-            if (!Regex.IsMatch(tokenList.First(), String.Format("({0}) | ({1}) | ({2})", lpPattern, varPattern, doublePattern), 
-                ignoreSpaceOption))
+            // Check to make sure first token is a number, a variable, or an opening parenthesis.
+            if (!Regex.IsMatch(_tokenList.First(), String.Format("({0}) | ({1}) | ({2})", lpPattern, varPattern, doublePattern), 
+                ignoreSpaceOption)) 
             {
                 throw new FormulaFormatException("The first token of a formula must be a number, a variable, or an opening parenthesis");
             }
 
-            if (!Regex.IsMatch(tokenList.Last(), String.Format("({0}) | ({1}) | ({2})", rpPattern, varPattern, doublePattern), 
-                ignoreSpaceOption))
+            // Check to make sure last token is a number, a variable, or a closing parenthesis.
+            if (!Regex.IsMatch(_tokenList.Last(), String.Format("({0}) | ({1}) | ({2})", rpPattern, varPattern, doublePattern), 
+                ignoreSpaceOption)) 
             {
                 throw new FormulaFormatException("The last token of a formula must be a number, a variable, or a closing parenthesis");
             }
 
-            foreach (string token in tokenList)
+            // Iterate through tokens to make sure formula is valid.
+            foreach (string token in _tokenList) 
             {
+                // Check for opening parenthesis.
                 if (token.Equals(lpPattern))
                 {
                     numberOfOpeningParenthesis++;
                 }
-                else if (token.Equals(rpPattern))
-                {
+                // Check for closing parenthesis.
+                else if (token.Equals(rpPattern)) {
                     numberOfClosingParenthesis++;
                 }
+                // Check for invalid tokens with regex.
                 else if (!Regex.IsMatch(token, String.Format("({0}) | ({1}) | ({2}) | ({3}) | ({4})",
                     lpPattern, rpPattern, opPattern, varPattern, doublePattern), ignoreSpaceOption))
                 {
                     throw new FormulaFormatException("There cannot be invalid tokens");
                 }
-                
-                if (numberOfClosingParenthesis > numberOfOpeningParenthesis)
+
+                // Make sure each closing parenthesis has its own opening parenthesis somewhere before it.
+                if (numberOfClosingParenthesis > numberOfOpeningParenthesis) 
                 {
                     throw new FormulaFormatException("All closing parentheses must have corresponding opening parenthesis");
                 }
 
+                // If this token is not the first one:
                 if (!string.IsNullOrEmpty(lastToken))
                 {
+                    // Make sure operators and opening parentheses are followed by a number or opening parenthesis.
                     if (Regex.IsMatch(lastToken, String.Format("({0}) | ({1})", lpPattern, opPattern), ignoreSpaceOption) &&
                         !Regex.IsMatch(token, String.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, lpPattern),
                         ignoreSpaceOption))
@@ -102,6 +125,7 @@ namespace Formulas
                         throw new FormulaFormatException("An opening parenthesis or an operator must followed by either a " +
                             "number, a variable, or an opening parenthesis");
                     }
+                    // Make sure numbers and closing parentheses are followed by operators or closing parentheses.
                     else if (Regex.IsMatch(lastToken, String.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, rpPattern),
                             ignoreSpaceOption) &&
                             !Regex.IsMatch(token, String.Format("({0}) | ({1})", opPattern, rpPattern), ignoreSpaceOption))
@@ -111,9 +135,11 @@ namespace Formulas
                     }
                 }
 
+                // Finished vetting token, now loop moves on to next and this one becomes the "lastToken".
                 lastToken = token;
             }
 
+            // Make sure opening and closing parentheses are balanced.
             if (numberOfOpeningParenthesis != numberOfClosingParenthesis)
             {
                 throw new FormulaFormatException("Must have equal numbers of opening and closing parentheses");
@@ -131,30 +157,44 @@ namespace Formulas
         /// </summary>
         public double Evaluate(Lookup lookup)
         {
-            var valueStack = new Stack<double>();
-            var operatorStack = new Stack<string>();
-            string op;
-            double number;
+            var valueStack = new Stack<double>(); // Stack of variables and doubles
+            var operatorStack = new Stack<string>(); // Stack of operators.
+            double number; // Current value of token if it is a double or variable.
 
-            foreach (string token in tokenList)
+
+            // Iterate through tokens.
+            foreach (string token in _tokenList)
             {
+                // Check to see what type of token current one is.
+
+                // Check if current token is a double.
                 if (Double.TryParse(token, out number))
                 {
+                    // See if most recent operator is not a multiplier or if operator stack is empty.
                     if (operatorStack.Count == 0 || !Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
                     {
+                        // If so, simply push current number to stack.
                         valueStack.Push(number);
                     }
                     else
                     {
+                        // If most recent operator is multiplier (* or /), apply operator to both 
+                        // current and previous value.
                         MultOrDivCurrentAndLastValues(ref valueStack, ref operatorStack, number);
                     }
                 }
+                // Check if current token is a variable.
                 else if (Regex.IsMatch(token, @"[a-zA-Z][0-9a-zA-Z]*"))
                 {
                     try
                     {
+                        // Try to pull numerical value of variable with passed in lookup delegate.
                         number = lookup(token);
 
+                        // Like when token was a double, see if most recent operator is not a multiplier 
+                        // or if operator stack is empty.  If so, simply push current number to stack.
+                        // If most recent operator is multiplier (* or /), apply operator to both 
+                        // current and previous value.
                         if (operatorStack.Count == 0 || !Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
                         {
                             valueStack.Push(number);
@@ -164,26 +204,36 @@ namespace Formulas
                             MultOrDivCurrentAndLastValues(ref valueStack, ref operatorStack, number);
                         }
                     }
+                    // Throw FormulaEvaluationException if lookup delegate was unsuccessful.
                     catch (UndefinedVariableException e)
                     {
                         throw new FormulaEvaluationException(e.Message);
                     }                    
                 }
+                // Check if current token is an additive operator (+ or -).
                 else if (Regex.IsMatch(token, @"[\+\-]"))
                 {
+                    // Try to add or subtract last two values on stack based on previous operator.
                     AddOrSubLastTwoValues(ref valueStack, ref operatorStack);
+
+                    // Push current operator onto the stack.
                     operatorStack.Push(token);
                 }
+                // Check if current token is a multiplicative operator (* or /) or an opening parenthesis.
                 else if (Regex.IsMatch(token, @"[\(*/]"))
                 {
                     operatorStack.Push(token);
                 }
                 else if (token.Equals(")"))
                 {
+                    // Try to add or subtract last two values on stack based on previous operator.
                     AddOrSubLastTwoValues(ref valueStack, ref operatorStack);
 
+                    // Pop opening parenthesis from operator stack.
                     operatorStack.Pop();
 
+                    // Check if a multiplicative operator (* or /) is on top of stack. If it is,
+                    // apply operator to last two values on stack and push result to value stack.
                     if (operatorStack.Count > 0 && Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
                     {
                         if (operatorStack.Peek().Equals("*"))
@@ -199,50 +249,85 @@ namespace Formulas
                 }
             }
 
+            // If there are no more operators to process, return last remaining value on stack.
             if (operatorStack.Count == 0)
             {
                 return valueStack.Pop();
             }
+            // If there is an operator left, it is additive (+ or -).  Apply it to last two 
+            // remaining values on stack and return result.
             else 
             {
                 AddOrSubLastTwoValues(ref valueStack, ref operatorStack);
             }
-
             return valueStack.Pop();
         }
 
-        private static void MultOrDivCurrentAndLastValues(ref Stack<double> valueStack, ref Stack<string> operatorStack,
+        /// <summary>
+        /// Helper method for when method Evaluate needs to multiply or divide top value on stack by current token.
+        /// Two stacks with at least one value and operator, respectively, and the current numerical value
+        /// of the double or variable token being processed are passed in as parameters. If * or / is at the top 
+        /// of the operator stack, pops the value stack, pops the operator stack, and applies the popped operator 
+        /// to current token and the popped number. Pushes the result onto the value stack. 
+        /// </summary>
+        /// <param name="valueStack">Pass in values stack by reference</param>
+        /// <param name="operatorStack">Pass in operators stack by reference</param>
+        /// <param name="currentValue">Pass in current token's numerical value</param>
+        private void MultOrDivCurrentAndLastValues(ref Stack<double> valueStack, ref Stack<string> operatorStack,
             double currentValue)
         {
+            // Checks if top of operator stack is a * or /.
             if (operatorStack.Count > 0 && Regex.IsMatch(operatorStack.Peek(), @"[*/]"))
             {
+                // Pop operator stack.
                 string op = operatorStack.Pop();
+
+                // Check if multiplication sign.
                 if (op.Equals("*"))
                 {
+                    // Multiply top two values on value stack and push result to stack.
                     valueStack.Push(valueStack.Pop() * currentValue);
                 }
+                // Check if division sign.
                 else if (op.Equals("/"))
                 {
+                    // Make sure divisor is not zero.
                     if (currentValue == 0)
                     {
                         throw new FormulaEvaluationException("Cannot divide by 0");
                     }
+                    // Divide penultimate value by last value on value stack and push result to stack.
                     valueStack.Push(valueStack.Pop() / currentValue);
                 }
             }
         }
 
-        private static void AddOrSubLastTwoValues(ref Stack<Double> valueStack, ref Stack<string> operatorStack)
+        /// <summary>
+        /// Helper method for when method Evaluate needs to add or subtract top two values on stack.
+        /// Two stacks with at least two values and one operator, respectively, are passed in as parameters.  
+        /// If + or - is at the top of the operator stack, pops the value stack twice and the operator stack 
+        /// once. Applies the popped operator to the popped numbers. Pushes the result onto the value stack.
+        /// </summary>
+        /// <param name="valueStack">Pass in values stack by reference</param>
+        /// <param name="operatorStack">Pass in operators stack by reference</param>
+        private void AddOrSubLastTwoValues(ref Stack<Double> valueStack, ref Stack<string> operatorStack)
         {
+            // Checks if top of operator stack is a + or -.
             if (operatorStack.Count > 0 && Regex.IsMatch(operatorStack.Peek(), @"[\+\-]"))
             {
+                // Pop operator stack.
                 string op = operatorStack.Pop();
+
+                // Check if plus sign.
                 if (op.Equals("+"))
                 {
+                    // Add top two values on value stack and push result to stack.
                     valueStack.Push(valueStack.Pop() + valueStack.Pop());
                 }
+                // Check if minus sign.
                 else if (op.Equals("-"))
                 {
+                    // Subtract last value from penultimate value on value stack and push result to stack.
                     valueStack.Push(valueStack.Pop() * -1 + valueStack.Pop());
                 }
             }

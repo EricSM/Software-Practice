@@ -49,11 +49,19 @@ namespace Dependencies
     /// </summary>
     public class DependencyGraph
     {
+
+        private Dictionary<string, HashSet<string>> _dependents;
+        private Dictionary<string, HashSet<string>> _dependees;
+        private int _size;
+
         /// <summary>
         /// Creates a DependencyGraph containing no dependencies.
         /// </summary>
         public DependencyGraph()
         {
+            _dependents = new Dictionary<string, HashSet<string>>();
+            _dependees = new Dictionary<string, HashSet<string>>();
+            _size = 0;
         }
 
         /// <summary>
@@ -61,7 +69,7 @@ namespace Dependencies
         /// </summary>
         public int Size
         {
-            get { return 0; }
+            get { return _size; }
         }
 
         /// <summary>

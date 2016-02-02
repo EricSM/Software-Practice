@@ -92,12 +92,13 @@ namespace Formulas
             foreach (string token in _tokenList) 
             {
                 // Check for opening parenthesis.
-                if (token.Equals(lpPattern))
+                if (Regex.IsMatch(token, lpPattern))
                 {
                     numberOfOpeningParenthesis++;
                 }
                 // Check for closing parenthesis.
-                else if (token.Equals(rpPattern)) {
+                else if (Regex.IsMatch(token, rpPattern))
+                { 
                     numberOfClosingParenthesis++;
                 }
                 // Check for invalid tokens with regex.
@@ -112,22 +113,22 @@ namespace Formulas
                 {
                     throw new FormulaFormatException("All closing parentheses must have corresponding opening parenthesis");
                 }
-
+                // TODO fix
                 // If this token is not the first one:
                 if (!string.IsNullOrEmpty(lastToken))
                 {
                     // Make sure operators and opening parentheses are followed by a number or opening parenthesis.
-                    if (Regex.IsMatch(lastToken, String.Format("({0}) | ({1})", lpPattern, opPattern), ignoreSpaceOption) &&
-                        !Regex.IsMatch(token, String.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, lpPattern),
+                    if (Regex.IsMatch(lastToken, string.Format("({0}) | ({1})", lpPattern, opPattern), ignoreSpaceOption) &&
+                        !Regex.IsMatch(token, string.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, lpPattern),
                         ignoreSpaceOption))
                     {
                         throw new FormulaFormatException("An opening parenthesis or an operator must followed by either a " +
                             "number, a variable, or an opening parenthesis");
                     }
                     // Make sure numbers and closing parentheses are followed by operators or closing parentheses.
-                    else if (Regex.IsMatch(lastToken, String.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, rpPattern),
+                    else if (Regex.IsMatch(lastToken, string.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, rpPattern),
                             ignoreSpaceOption) &&
-                            !Regex.IsMatch(token, String.Format("({0}) | ({1})", opPattern, rpPattern), ignoreSpaceOption))
+                            !Regex.IsMatch(token, string.Format("({0}) | ({1})", opPattern, rpPattern), ignoreSpaceOption))
                     {
                         throw new FormulaFormatException("A number, a variable, or a closing parenthesis must followed by " +
                             "either an operator or a closing parenthesis");
@@ -242,6 +243,11 @@ namespace Formulas
                         }
                         else if (operatorStack.Peek().Equals("/"))
                         {
+                            // Make sure divisor is not 0.
+                            if (valueStack.Peek() == 0)
+                            {
+                                throw new FormulaEvaluationException("");
+                            }
                             valueStack.Push(1 / valueStack.Pop() * valueStack.Pop());
                         }
                     }

@@ -50,8 +50,8 @@ namespace Dependencies
     public class DependencyGraph
     {
 
-        private Dictionary<string, HashSet<string>> _dependents;
-        private Dictionary<string, HashSet<string>> _dependees;
+        private Dictionary<string, HashSet<string>> _dependeesByDependents;
+        private Dictionary<string, HashSet<string>> _dependentsByDependees;
         private int _size;
 
         /// <summary>
@@ -59,8 +59,8 @@ namespace Dependencies
         /// </summary>
         public DependencyGraph()
         {
-            _dependents = new Dictionary<string, HashSet<string>>();
-            _dependees = new Dictionary<string, HashSet<string>>();
+            _dependeesByDependents = new Dictionary<string, HashSet<string>>();
+            _dependentsByDependees = new Dictionary<string, HashSet<string>>();
             _size = 0;
         }
 
@@ -77,7 +77,14 @@ namespace Dependencies
         /// </summary>
         public bool HasDependents(string s)
         {
-            return false;
+            if (_dependeesByDependents.ContainsKey(s))
+            {
+                return _dependeesByDependents.Count > 0;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -85,7 +92,14 @@ namespace Dependencies
         /// </summary>
         public bool HasDependees(string s)
         {
-            return false;
+            if (_dependentsByDependees.ContainsKey(s))
+            {
+                return _dependentsByDependees.Count > 0;
+            }
+            else
+            {
+                return false;
+            }
         }
 
         /// <summary>
@@ -93,7 +107,15 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            return null;
+            HashSet<string> dependents;
+            if (_dependentsByDependees.TryGetValue(s, out dependents))
+            {
+                return dependents;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>
@@ -101,7 +123,15 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
-            return null;
+            HashSet<string> dependees;
+            if (_dependeesByDependents.TryGetValue(s, out dependees))
+            {
+                return dependees;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         /// <summary>

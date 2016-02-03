@@ -209,9 +209,31 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
-            if (s == null || newDependents == null)
+            if (s == null)
             {
                 throw new ArgumentNullException();
+            }
+
+            HashSet<string> oldDependents;
+
+            if (_dependentsByDependees.TryGetValue(s, out oldDependents))
+            {
+                foreach (string r in oldDependents)
+                {
+                    RemoveDependency(s, r);
+                }
+            }
+
+            foreach (string t in newDependents)
+            {
+                if (t == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                else
+                {
+                    AddDependency(s, t);
+                }
             }
         }
 
@@ -222,6 +244,32 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependees(string t, IEnumerable<string> newDependees)
         {
+            if (t == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+            HashSet<string> oldDependees;
+
+            if (_dependeesByDependents.TryGetValue(t, out oldDependees))
+            {
+                foreach (string r in oldDependees)
+                {
+                    RemoveDependency(r, t);
+                }
+            }
+
+            foreach (string s in newDependees)
+            {
+                if (s == null)
+                {
+                    throw new ArgumentNullException();
+                }
+                else
+                {
+                    AddDependency(s, t);
+                }
+            }
         }
     }
 }

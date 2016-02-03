@@ -81,9 +81,9 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            else if (_dependeesByDependents.ContainsKey(s))
+            else if (_dependentsByDependees.ContainsKey(s))
             {
-                return _dependeesByDependents.Count > 0;
+                return _dependentsByDependees.Count > 0;
             }
             else
             {
@@ -101,9 +101,9 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            else if (_dependentsByDependees.ContainsKey(s))
+            else if (_dependeesByDependents.ContainsKey(s))
             {
-                return _dependentsByDependees.Count > 0;
+                return _dependeesByDependents.Count > 0;
             }
             else
             {
@@ -116,14 +116,16 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            HashSet<string> dependents;
-            if (_dependentsByDependees.TryGetValue(s, out dependents))
+            if (_dependentsByDependees.ContainsKey(s))
             {
-                return dependents;
+                foreach (string dependent in _dependentsByDependees[s])
+                {
+                    yield return dependent;
+                }
             }
             else
             {
-                return null;
+                yield break;
             }
         }
 
@@ -132,14 +134,16 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
-            HashSet<string> dependees;
-            if (_dependeesByDependents.TryGetValue(s, out dependees))
+            if (_dependeesByDependents.ContainsKey(s))
             {
-                return dependees;
+                foreach (string dependees in _dependeesByDependents[s])
+                {
+                    yield return dependees;
+                }
             }
             else
             {
-                return null;
+                yield break;
             }
         }
 
@@ -185,6 +189,12 @@ namespace Dependencies
         /// </summary>
         public void RemoveDependency(string s, string t)
         {
+            if (s == null || t == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+
         }
 
         /// <summary>
@@ -194,6 +204,10 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
+            if (s == null || newDependents == null)
+            {
+                throw new ArgumentNullException();
+            }
         }
 
         /// <summary>

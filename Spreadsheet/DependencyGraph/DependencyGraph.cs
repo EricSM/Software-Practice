@@ -77,7 +77,11 @@ namespace Dependencies
         /// </summary>
         public bool HasDependents(string s)
         {
-            if (_dependeesByDependents.ContainsKey(s))
+            if (s == null)
+            {
+                throw new ArgumentNullException();
+            }
+            else if (_dependeesByDependents.ContainsKey(s))
             {
                 return _dependeesByDependents.Count > 0;
             }
@@ -92,7 +96,12 @@ namespace Dependencies
         /// </summary>
         public bool HasDependees(string s)
         {
-            if (_dependentsByDependees.ContainsKey(s))
+
+            if (s == null)
+            {
+                throw new ArgumentNullException();
+            }
+            else if (_dependentsByDependees.ContainsKey(s))
             {
                 return _dependentsByDependees.Count > 0;
             }
@@ -141,6 +150,32 @@ namespace Dependencies
         /// </summary>
         public void AddDependency(string s, string t)
         {
+            if (s == null || t == null)
+            {
+                throw new ArgumentNullException();
+            }
+
+
+            if (_dependeesByDependents.ContainsKey(s) && !_dependeesByDependents[s].Contains(t))
+            {
+                _size++;
+                _dependeesByDependents[s].Add(t);
+            }
+            else if (!_dependeesByDependents.ContainsKey(s))
+            {
+                _size++;
+                _dependeesByDependents.Add(s, new HashSet<string>() { t });
+            }
+
+
+            if (_dependentsByDependees.ContainsKey(t))
+            {
+                _dependentsByDependees[t].Add(s);
+            }
+            else
+            {
+                _dependentsByDependees.Add(t, new HashSet<string>() { s });
+            }
         }
 
         /// <summary>

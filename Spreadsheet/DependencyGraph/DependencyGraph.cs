@@ -194,7 +194,12 @@ namespace Dependencies
                 throw new ArgumentNullException();
             }
 
-
+            if (_dependentsByDependees.ContainsKey(s) && _dependentsByDependees[s].Contains(t))
+            {
+                _dependentsByDependees[s].Remove(t);
+                _dependeesByDependents[t].Remove(s);
+                _size--;
+            }
         }
 
         /// <summary>

@@ -160,25 +160,25 @@ namespace Dependencies
             }
 
 
-            if (_dependeesByDependents.ContainsKey(s) && !_dependeesByDependents[s].Contains(t))
+            if (_dependentsByDependees.ContainsKey(s) && !_dependentsByDependees[s].Contains(t))
             {
                 _size++;
-                _dependeesByDependents[s].Add(t);
+                _dependentsByDependees[s].Add(t);
             }
-            else if (!_dependeesByDependents.ContainsKey(s))
+            else if (!_dependentsByDependees.ContainsKey(s))
             {
                 _size++;
-                _dependeesByDependents.Add(s, new HashSet<string>() { t });
+                _dependentsByDependees.Add(s, new HashSet<string>() { t });
             }
 
 
-            if (_dependentsByDependees.ContainsKey(t))
+            if (_dependeesByDependents.ContainsKey(t))
             {
-                _dependentsByDependees[t].Add(s);
+                _dependeesByDependents[t].Add(s);
             }
             else
             {
-                _dependentsByDependees.Add(t, new HashSet<string>() { s });
+                _dependeesByDependents.Add(t, new HashSet<string>() { s });
             }
         }
 

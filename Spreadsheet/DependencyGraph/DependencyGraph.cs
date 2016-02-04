@@ -30,22 +30,6 @@ namespace Dependencies
     ///     dependees("b") = {"a"}
     ///     dependees("c") = {"a"}
     ///     dependees("d") = {"b", "d"}
-    ///     
-    /// All of the methods below require their string parameters to be non-null.  This means that 
-    /// the behavior of the method is undefined when a string parameter is null.  
-    ///
-    /// IMPORTANT IMPLEMENTATION NOTE
-    /// 
-    /// The simplest way to describe a DependencyGraph and its methods is as a set of dependencies, 
-    /// as discussed above.
-    /// 
-    /// However, physically representing a DependencyGraph as, say, a set of ordered pairs will not
-    /// yield an acceptably efficient representation.  DO NOT USE SUCH A REPRESENTATION.
-    /// 
-    /// You'll need to be more clever than that.  Design a representation that is both easy to work
-    /// with as well acceptably efficient according to the guidelines in the PS3 writeup. Some of
-    /// the test cases with which you will be graded will create massive DependencyGraphs.  If you
-    /// build an inefficient DependencyGraph this week, you will be regretting it for the next month.
     /// </summary>
     public class DependencyGraph
     {

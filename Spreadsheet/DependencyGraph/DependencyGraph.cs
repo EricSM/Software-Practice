@@ -120,9 +120,10 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
-            if (_dependentsByDependees.ContainsKey(s))
+            HashSet<string> dependents;
+            if (_dependentsByDependees.TryGetValue(s, out dependents))
             {
-                foreach (string dependent in _dependentsByDependees[s])
+                foreach (string dependent in dependents)
                 {
                     yield return dependent;
                 }
@@ -138,11 +139,12 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
-            if (_dependeesByDependents.ContainsKey(s))
+            HashSet<string> dependees;
+            if (_dependeesByDependents.TryGetValue(s, out dependees))
             {
-                foreach (string dependees in _dependeesByDependents[s])
+                foreach (string dependee in dependees)
                 {
-                    yield return dependees;
+                    yield return dependee;
                 }
             }
             else

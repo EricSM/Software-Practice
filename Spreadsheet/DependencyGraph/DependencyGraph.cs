@@ -120,6 +120,11 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
+            if (s == null)
+            {
+                throw new ArgumentNullException();
+            }
+
             HashSet<string> dependents;
             if (_dependentsByDependees.TryGetValue(s, out dependents))
             {
@@ -139,6 +144,11 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
+            if (s == null)
+            {
+                throw new ArgumentNullException();
+            }
+
             HashSet<string> dependees;
             if (_dependeesByDependents.TryGetValue(s, out dependees))
             {
@@ -166,12 +176,12 @@ namespace Dependencies
             }
 
 
-            if (_dependentsByDependees.ContainsKey(s) && !_dependentsByDependees[s].Contains(t))
+            if (_dependentsByDependees.ContainsKey(s))
             {
                 _size++;
                 _dependentsByDependees[s].Add(t);
             }
-            else if (!_dependentsByDependees.ContainsKey(s))
+            else
             {
                 _size++;
                 _dependentsByDependees.Add(s, new HashSet<string>() { t });
@@ -200,7 +210,8 @@ namespace Dependencies
                 throw new ArgumentNullException();
             }
 
-            if (_dependentsByDependees.ContainsKey(s) && _dependentsByDependees[s].Contains(t))
+            HashSet<string> dependents;
+            if (_dependentsByDependees.TryGetValue(s, out dependents) && dependents.Contains(t))
             {
                 _dependentsByDependees[s].Remove(t);
                 _dependeesByDependents[t].Remove(s);
@@ -215,31 +226,16 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
-            if (s == null)
-            {
-                throw new ArgumentNullException();
-            }
+            var oldDependents = GetDependents(s);
 
-            HashSet<string> oldDependents;
-
-            if (_dependentsByDependees.TryGetValue(s, out oldDependents))
+            foreach (string r in oldDependents)
             {
-                foreach (string r in oldDependents)
-                {
-                    RemoveDependency(s, r);
-                }
+                RemoveDependency(s, r);
             }
 
             foreach (string t in newDependents)
             {
-                if (t == null)
-                {
-                    throw new ArgumentNullException();
-                }
-                else
-                {
-                    AddDependency(s, t);
-                }
+                AddDependency(s, t);
             }
         }
 
@@ -250,31 +246,16 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependees(string t, IEnumerable<string> newDependees)
         {
-            if (t == null)
+            var oldDependees = GetDependees(t);
+            
+            foreach (string r in oldDependees)
             {
-                throw new ArgumentNullException();
-            }
-
-            HashSet<string> oldDependees;
-
-            if (_dependeesByDependents.TryGetValue(t, out oldDependees))
-            {
-                foreach (string r in oldDependees)
-                {
-                    RemoveDependency(r, t);
-                }
+                RemoveDependency(r, t);
             }
 
             foreach (string s in newDependees)
             {
-                if (s == null)
-                {
-                    throw new ArgumentNullException();
-                }
-                else
-                {
-                    AddDependency(s, t);
-                }
+                AddDependency(s, t);
             }
         }
     }

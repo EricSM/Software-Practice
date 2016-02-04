@@ -175,11 +175,14 @@ namespace Dependencies
                 throw new ArgumentNullException();
             }
 
-
-            if (_dependentsByDependees.ContainsKey(s))
+            HashSet<string> dependents;
+            if (_dependentsByDependees.TryGetValue(s, out dependents))
             {
-                _size++;
-                _dependentsByDependees[s].Add(t);
+                if (!dependents.Contains(t))
+                {
+                    _size++;
+                    _dependentsByDependees[s].Add(t);
+                }
             }
             else
             {

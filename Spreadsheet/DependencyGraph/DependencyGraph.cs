@@ -81,9 +81,11 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            else if (_dependentsByDependees.ContainsKey(s))
+
+            HashSet<string> dependents;
+            if (_dependentsByDependees.TryGetValue(s, out dependents))
             {
-                return _dependentsByDependees.Count > 0;
+                return dependents.Count > 0;
             }
             else
             {
@@ -101,9 +103,11 @@ namespace Dependencies
             {
                 throw new ArgumentNullException();
             }
-            else if (_dependeesByDependents.ContainsKey(s))
+
+            HashSet<string> dependees;
+            if (_dependeesByDependents.TryGetValue(s, out dependees))
             {
-                return _dependeesByDependents.Count > 0;
+                return dependees.Count > 0;
             }
             else
             {

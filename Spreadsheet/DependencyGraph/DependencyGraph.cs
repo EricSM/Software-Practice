@@ -213,7 +213,7 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
-            var oldDependents = GetDependents(s);
+            var oldDependents = new HashSet<string>(GetDependents(s));
 
             foreach (string r in oldDependents)
             {
@@ -233,7 +233,7 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependees(string t, IEnumerable<string> newDependees)
         {
-            var oldDependees = GetDependees(t);
+            var oldDependees = new HashSet<string>(GetDependees(t));
             
             foreach (string r in oldDependees)
             {

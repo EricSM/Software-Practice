@@ -1,4 +1,8 @@
-﻿using System;
+﻿// Name: Eric Miramontes
+// uNID: u0801584
+
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Dependencies;
 using System.Collections.Generic;
@@ -8,6 +12,7 @@ namespace DependencyGraphTests
     [TestClass]
     public class DependencyGraphTests
     {
+        // Tests the constructor
         [TestMethod]
         public void TestConstructor1()
         {
@@ -15,6 +20,7 @@ namespace DependencyGraphTests
             Assert.AreEqual(0, dg.Size);
         }
 
+        // Tests for the method AddDependency.
         [TestMethod]
         public void TestAddDependency1()
         {
@@ -35,6 +41,7 @@ namespace DependencyGraphTests
             dg.AddDependency(null, "t");
         }
 
+        // Tests for the method HasDependents.
         [TestMethod]
         public void TestHasDependents1()
         {
@@ -52,6 +59,7 @@ namespace DependencyGraphTests
             dg.HasDependents(null);
         }
 
+        // Tests for the method HasDependees.
         [TestMethod]
         public void TestHasDependees1()
         {
@@ -69,6 +77,7 @@ namespace DependencyGraphTests
             dg.HasDependees(null);
         }
 
+        // Tests for the method GetDependents.
         [TestMethod]
         public void TestGetDependents1()
         {
@@ -100,6 +109,7 @@ namespace DependencyGraphTests
             var dependents = new HashSet<string>(dg.GetDependents(null));
         }
 
+        // Tests for the method GetDependees.
         [TestMethod]
         public void TestGetDependees1()
         {
@@ -133,13 +143,16 @@ namespace DependencyGraphTests
             var dependees = new HashSet<string>(dg.GetDependees(null));
         }
         
+        // Tests for the method RemoveDependency.
         [TestMethod]
         public void TestRemoveDependency1()
         {
             DependencyGraph dg = new DependencyGraph();
             dg.AddDependency("s", "t");
+
+            // Try to remove a nonexistent dependency
             dg.RemoveDependency("s", "t1");
-            Assert.IsTrue(dg.Size == 1);
+            Assert.IsTrue(dg.Size == 1); // size should remain 1
 
             dg.RemoveDependency("s", "t");
             Assert.IsTrue(dg.Size == 0);
@@ -153,6 +166,7 @@ namespace DependencyGraphTests
             dg.RemoveDependency("s", null);
         }
 
+        // Test for the method ReplaceDependents.
         [TestMethod]
         public void TestReplaceDependents()
         {
@@ -168,6 +182,7 @@ namespace DependencyGraphTests
             Assert.IsTrue(dependents.SetEquals(new HashSet<string> { "t4", "t5", "t6" }));
         }
 
+        // Test for the method ReplaceDependees.
         [TestMethod]
         public void TestReplaceDependees()
         {

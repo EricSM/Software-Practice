@@ -10,7 +10,7 @@ using System.Collections.Generic;
 namespace DependencyGraphTests
 {
     [TestClass]
-    public class DependencyGraphTests
+    public class DependencyGraphTestCases
     {
         // Tests the constructor
 

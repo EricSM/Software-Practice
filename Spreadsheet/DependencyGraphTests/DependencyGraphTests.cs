@@ -13,6 +13,10 @@ namespace DependencyGraphTests
     public class DependencyGraphTests
     {
         // Tests the constructor
+
+        /// <summary>
+        /// The empty constructor's size should be zero.
+        /// </summary>
         [TestMethod]
         public void TestConstructor1()
         {
@@ -21,6 +25,11 @@ namespace DependencyGraphTests
         }
 
         // Tests for the method AddDependency.
+
+        /// <summary>
+        /// Tries to add the same dependency twice.  Size should only be 1.  Then tries to add another dependency,
+        /// at which point the size should be 2.
+        /// </summary>
         [TestMethod]
         public void TestAddDependency1()
         {
@@ -33,6 +42,9 @@ namespace DependencyGraphTests
             Assert.AreEqual(dg.Size, 2);
         }
 
+        /// <summary>
+        /// Test for exception when null is passed in as a parameter.
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void TestAddDependency2()
@@ -42,6 +54,10 @@ namespace DependencyGraphTests
         }
 
         // Tests for the method HasDependents.
+
+        /// <summary>
+        /// Test to make sure s has a dependent and t does not if (s, t) are passed in.
+        /// </summary>
         [TestMethod]
         public void TestHasDependents1()
         {
@@ -51,6 +67,9 @@ namespace DependencyGraphTests
             Assert.IsFalse(dg.HasDependents("t"));
         }
 
+        /// <summary>
+        /// Tests for exception when null is passed in as a parameter.
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void TestHasDependents2()
@@ -60,6 +79,9 @@ namespace DependencyGraphTests
         }
 
         // Tests for the method HasDependees.
+        /// <summary>
+        /// Test to make sure t has a dependee and s does not if (s, t) are passed in.
+        /// </summary>
         [TestMethod]
         public void TestHasDependees1()
         {
@@ -69,6 +91,9 @@ namespace DependencyGraphTests
             Assert.IsTrue(dg.HasDependees("t"));
         }
 
+        /// <summary>
+        /// Test for exception when null is passed in as a parameter.
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void TestHasDependees2()
@@ -78,6 +103,10 @@ namespace DependencyGraphTests
         }
 
         // Tests for the method GetDependents.
+
+        /// <summary>
+        /// s1 is depended on by t1, t2, and t3.  Test tries to retrieve those dependents.
+        /// </summary>
         [TestMethod]
         public void TestGetDependents1()
         {
@@ -92,6 +121,9 @@ namespace DependencyGraphTests
                 dependents.Contains("t3"));
         }
 
+        /// <summary>
+        /// Get IEnumerable of the dependents of a nonexistent node.  IEnumerable should be empty.
+        /// </summary>
         [TestMethod]
         public void TestGetDependents2()
         {
@@ -101,6 +133,9 @@ namespace DependencyGraphTests
             Assert.AreEqual(dependents.Count, 0);
         }
 
+        /// <summary>
+        /// Test for exception when null is passed in as a parameter.
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void TestGetDependents3()
@@ -110,6 +145,10 @@ namespace DependencyGraphTests
         }
 
         // Tests for the method GetDependees.
+        
+        /// <summary>
+        /// t1 depends on s1, s2, and s3.  Test tries to retrieve those dependees.
+        /// </summary>
         [TestMethod]
         public void TestGetDependees1()
         {
@@ -126,6 +165,9 @@ namespace DependencyGraphTests
 
         }
 
+        /// <summary>
+        /// Get IEnumerable of the dependees of a nonexistent node.  IEnumerable should be empty.
+        /// </summary>
         [TestMethod]
         public void TestGetDependees2()
         {
@@ -135,6 +177,9 @@ namespace DependencyGraphTests
             Assert.AreEqual(dependees.Count, 0);
         }
 
+        /// <summary>
+        /// Test for exception when null is passed in as a parameter.
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void TestGetDependees3()
@@ -144,6 +189,10 @@ namespace DependencyGraphTests
         }
         
         // Tests for the method RemoveDependency.
+        
+        /// <summary>
+        /// Add dependency (s, t) then try to remove it.
+        /// </summary>
         [TestMethod]
         public void TestRemoveDependency1()
         {
@@ -158,6 +207,9 @@ namespace DependencyGraphTests
             Assert.IsTrue(dg.Size == 0);
         }
 
+        /// <summary>
+        /// Test for exception when null is passed in as a parameter.
+        /// </summary>
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
         public void TestRemoveDependency2()
@@ -167,6 +219,10 @@ namespace DependencyGraphTests
         }
 
         // Test for the method ReplaceDependents.
+        /// <summary>
+        /// t1, t2, and t3 depend on s1.  Replaces those dependents with t4, t5, and t6.
+        /// Uses method GetDependents to make sure replacement was successful.
+        /// </summary>
         [TestMethod]
         public void TestReplaceDependents()
         {
@@ -183,6 +239,10 @@ namespace DependencyGraphTests
         }
 
         // Test for the method ReplaceDependees.
+        /// <summary>
+        /// t1 is dependent on s1, s2, and s3.  Replaces those dependees with s4, s5, and s6.
+        /// Uses method GetDependees to make sure replacement was successful.
+        /// </summary>
         [TestMethod]
         public void TestReplaceDependees()
         {

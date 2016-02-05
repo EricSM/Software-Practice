@@ -1,6 +1,9 @@
 ﻿// Skeleton implementation written by Joe Zachary for CS 3500, January 2015.
 // Revised for CS 3500 by Joe Zachary, January 29, 2016
 
+// Name: Eric Miramontes
+// uNID: u0801584
+
 using System;
 using System.Collections.Generic;
 
@@ -33,9 +36,21 @@ namespace Dependencies
     /// </summary>
     public class DependencyGraph
     {
-
+        /// <summary>
+        /// Dictionary where the keys are dependents and the values are the hashsets of each of
+        /// the dependent's dependees.  Each dependent has its own set of dependees.
+        /// </summary>
         private Dictionary<string, HashSet<string>> _dependeesByDependents;
+
+        /// <summary>
+        /// Dictionary where the keys are dependees and the values are the hashsets of each of
+        /// the dependee's dependents.  Each dependee has its own set of dependents.
+        /// </summary>
         private Dictionary<string, HashSet<string>> _dependentsByDependees;
+
+        /// <summary>
+        /// Number of sets of dependencies (s, t)
+        /// </summary>
         private int _size;
 
         /// <summary>
@@ -61,16 +76,20 @@ namespace Dependencies
         /// </summary>
         public bool HasDependents(string s)
         {
+            // Check if s is null.
             if (s == null)
             {
                 throw new ArgumentNullException();
             }
 
             HashSet<string> dependents;
+            // Try to retrieve the dependents of s and assign it to hashset "dependents".
             if (_dependentsByDependees.TryGetValue(s, out dependents))
             {
+                // Check if "dependents" has at least one element.
                 return dependents.Count > 0;
             }
+            // If retrieval attempt fails, return false.
             else
             {
                 return false;
@@ -82,17 +101,20 @@ namespace Dependencies
         /// </summary>
         public bool HasDependees(string s)
         {
-
+            // Check if s is null
             if (s == null)
             {
                 throw new ArgumentNullException();
             }
 
             HashSet<string> dependees;
+            // Try to retrieve dependees of s and assign it to hashset "dependees".
             if (_dependeesByDependents.TryGetValue(s, out dependees))
             {
+                // Check if "dependees" has at least one element
                 return dependees.Count > 0;
             }
+            // If retrieval attempt fails, return false.
             else
             {
                 return false;
@@ -104,19 +126,23 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependents(string s)
         {
+            // Check if s is null.
             if (s == null)
             {
                 throw new ArgumentNullException();
             }
 
             HashSet<string> dependents;
+            // Try to retrieve the dependents of s and assign it to hashset "dependents".
             if (_dependentsByDependees.TryGetValue(s, out dependents))
             {
+                // Iterate through "dependents" and return string "dependent".
                 foreach (string dependent in dependents)
                 {
                     yield return dependent;
                 }
             }
+            // If retrieval attempt fails, return false.
             else
             {
                 yield break;
@@ -128,19 +154,23 @@ namespace Dependencies
         /// </summary>
         public IEnumerable<string> GetDependees(string s)
         {
+            // Check if s is null.
             if (s == null)
             {
                 throw new ArgumentNullException();
             }
 
             HashSet<string> dependees;
+            // Try to retrieve dependees of s and assign it to hashset "dependees".
             if (_dependeesByDependents.TryGetValue(s, out dependees))
             {
+                // Iterate through "dependees" and return string "dependee".
                 foreach (string dependee in dependees)
                 {
                     yield return dependee;
                 }
             }
+            // If retrieval attempt fails, return false.
             else
             {
                 yield break;
@@ -154,33 +184,44 @@ namespace Dependencies
         /// </summary>
         public void AddDependency(string s, string t)
         {
+            // Check if either s or t are null.
             if (s == null || t == null)
             {
                 throw new ArgumentNullException();
             }
 
             HashSet<string> dependents;
+            // Try to retrieve the dependents of s and assign it to hashset "dependents".
             if (_dependentsByDependees.TryGetValue(s, out dependents))
             {
+                // Check if t is not already a dependent of s
                 if (!dependents.Contains(t))
                 {
-                    _size++;
-                    _dependentsByDependees[s].Add(t);
+                    _size++; // Increment size
+                    _dependentsByDependees[s].Add(t); // Add t as a dependent of s
                 }
             }
+            // If s has no dependents
             else
             {
-                _size++;
+                _size++; // Increment size
+
+                // Add new entry in dictionary of dependents (Values) listed by dependees (Keys) 
+                // with dependee s as the key and a new hashset of dependents containing t as the value.
                 _dependentsByDependees.Add(s, new HashSet<string>() { t });
             }
 
-
+            // Check if dependent t has entry with its own list of dependees
             if (_dependeesByDependents.ContainsKey(t))
             {
+                // Add dependee s to dependent t's list of dependees
                 _dependeesByDependents[t].Add(s);
             }
+            // If dependent t has no entries in dictionary of dependees.
             else
             {
+                // Add new entry in dictionary of dependees (Values) listed by dependents (Keys) 
+                // with dependent t as the key and a new hashset of dependees containing s as the value.
                 _dependeesByDependents.Add(t, new HashSet<string>() { s });
             }
         }
@@ -192,17 +233,20 @@ namespace Dependencies
         /// </summary>
         public void RemoveDependency(string s, string t)
         {
+            // Check if either s or t are null.
             if (s == null || t == null)
             {
                 throw new ArgumentNullException();
             }
 
             HashSet<string> dependents;
+            // Try to retrieve the dependents of s, if it exists, and assign it to hashset "dependents".
+            // Then check if dependents contains dependent (t).
             if (_dependentsByDependees.TryGetValue(s, out dependents) && dependents.Contains(t))
             {
-                _dependentsByDependees[s].Remove(t);
-                _dependeesByDependents[t].Remove(s);
-                _size--;
+                _dependentsByDependees[s].Remove(t); // Remove dependent t from dependee s's list of dependents.
+                _dependeesByDependents[t].Remove(s); // Remove dependee s from dependent t's list of depenees.
+                _size--; // Decrement size.
             }
         }
 
@@ -213,15 +257,20 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependents(string s, IEnumerable<string> newDependents)
         {
+            // Retrieve dependents of dependee s and put it in a hashset.
             var oldDependents = new HashSet<string>(GetDependents(s));
 
+            // Iterate through the oldDependents.
             foreach (string r in oldDependents)
             {
+                // Remove dependency between dependee s and the old dependent r.
                 RemoveDependency(s, r);
             }
 
+            // Iterate through new dependents.
             foreach (string t in newDependents)
             {
+                // Add new dependency between dependee s and new dependent t.
                 AddDependency(s, t);
             }
         }
@@ -233,15 +282,20 @@ namespace Dependencies
         /// </summary>
         public void ReplaceDependees(string t, IEnumerable<string> newDependees)
         {
+            // Retrieve dependees of dependents t and put it in a hashset.
             var oldDependees = new HashSet<string>(GetDependees(t));
-            
+
+            // Iterate through the oldDependees.
             foreach (string r in oldDependees)
             {
+                // Remove dependency between old dependee r and the dependent t.
                 RemoveDependency(r, t);
             }
 
+            // Iterate through new dependees.
             foreach (string s in newDependees)
             {
+                // Add new dependency between dependee s and new dependent t.
                 AddDependency(s, t);
             }
         }

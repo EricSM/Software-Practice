@@ -7,10 +7,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Dependencies;
 using System.Collections.Generic;
 
-namespace DependencyGraphTests
+namespace DependencyGraphTestCases
 {
+    /// <summary>
+    /// UnitTests for class library DependencyGraph.
+    /// </summary>
     [TestClass]
-    public class DependencyGraphTestCases
+    public class DependencyGraphUnitTest
     {
         // Tests the constructor
 
@@ -145,7 +148,7 @@ namespace DependencyGraphTests
         }
 
         // Tests for the method GetDependees.
-        
+
         /// <summary>
         /// t1 depends on s1, s2, and s3.  Test tries to retrieve those dependees.
         /// </summary>
@@ -173,7 +176,7 @@ namespace DependencyGraphTests
         {
             DependencyGraph dg = new DependencyGraph();
             var dependees = new HashSet<string>(dg.GetDependees("t1"));
-            
+
             Assert.AreEqual(dependees.Count, 0);
         }
 
@@ -187,9 +190,9 @@ namespace DependencyGraphTests
             DependencyGraph dg = new DependencyGraph();
             var dependees = new HashSet<string>(dg.GetDependees(null));
         }
-        
+
         // Tests for the method RemoveDependency.
-        
+
         /// <summary>
         /// Add dependency (s, t) then try to remove it.
         /// </summary>
@@ -251,7 +254,7 @@ namespace DependencyGraphTests
             dg.AddDependency("s2", "t1");
             dg.AddDependency("s3", "t1");
 
-            dg.ReplaceDependees("t1", new HashSet<string> { "s4", "s5", "s6"});
+            dg.ReplaceDependees("t1", new HashSet<string> { "s4", "s5", "s6" });
 
             var dependees = new HashSet<string>(dg.GetDependees("t1"));
 

@@ -19,7 +19,7 @@ namespace Formulas
     /// the four binary operator symbols +, -, *, and /.  (The unary operators + and -
     /// are not allowed.)
     /// </summary>
-    public class Formula
+    public struct Formula
     {
         /// <summary>
         /// List of tokens derived from the GetTokens method with invalid tokens removed.
@@ -157,6 +157,11 @@ namespace Formulas
         /// </summary>
         public double Evaluate(Lookup lookup)
         {
+            if (_tokenList == null)
+            {
+                return 0;
+            }
+
             var valueStack = new Stack<double>(); // Stack of variables and doubles
             var operatorStack = new Stack<string>(); // Stack of operators.
             double number; // Current value of token if it is a double or variable.
@@ -366,6 +371,20 @@ namespace Formulas
                     yield return s;
                 }
             }
+        }
+
+        /// <summary>
+        /// Returns formula.
+        /// </summary>
+        /// <returns></returns>
+        public override string ToString()
+        {
+            if (_tokenList == null)
+            {
+                return "0";
+            }
+
+            return string.Join("", _tokenList);
         }
     }
     

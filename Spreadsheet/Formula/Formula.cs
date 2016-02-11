@@ -118,7 +118,7 @@ namespace Formulas
                 if (!string.IsNullOrEmpty(lastToken))
                 {
                     // Make sure operators and opening parentheses are followed by a number or opening parenthesis.
-                    if (Regex.IsMatch(lastToken, string.Format("({0}) | ({1})", lpPattern, opPattern), ignoreSpaceOption) &&
+                    if (Regex.IsMatch(lastToken, string.Format("({0}) | ^({1})$", lpPattern, opPattern), ignoreSpaceOption) &&
                         !Regex.IsMatch(token, string.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, lpPattern),
                         ignoreSpaceOption))
                     {
@@ -128,7 +128,7 @@ namespace Formulas
                     // Make sure numbers and closing parentheses are followed by operators or closing parentheses.
                     else if (Regex.IsMatch(lastToken, string.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, rpPattern),
                             ignoreSpaceOption) &&
-                            !Regex.IsMatch(token, string.Format("({0}) | ({1})", opPattern, rpPattern), ignoreSpaceOption))
+                            !Regex.IsMatch(token, string.Format("^({0})$ | ({1})", opPattern, rpPattern), ignoreSpaceOption))
                     {
                         throw new FormulaFormatException("A number, a variable, or a closing parenthesis must followed by " +
                             "either an operator or a closing parenthesis");

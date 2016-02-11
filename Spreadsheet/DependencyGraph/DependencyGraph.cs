@@ -69,8 +69,8 @@ namespace Dependencies
         /// <param name="dependencyGraph"></param>
         public DependencyGraph(DependencyGraph dependencyGraph)
         {
-            _dependents = dependencyGraph.Dependents;
-            _dependees = dependencyGraph.Dependees;
+            _dependents = dependencyGraph._dependents;
+            _dependees = dependencyGraph._dependees;
             _size = dependencyGraph.Size;
         }
 
@@ -80,22 +80,6 @@ namespace Dependencies
         public int Size
         {
             get { return _size; }
-        }
-
-        /// <summary>
-        /// All hashsets of dependents of each key in the dictionary.
-        /// </summary>
-        public Dictionary<string, HashSet<string>> Dependents
-        {
-            get { return _dependents; }
-        }
-
-        /// <summary>
-        /// All hashsets of dependees of each key in the dictionary.
-        /// </summary>
-        public Dictionary<string, HashSet<string>> Dependees
-        {
-            get { return _dependees; }
         }
 
         /// <summary>

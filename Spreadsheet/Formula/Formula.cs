@@ -108,7 +108,7 @@ namespace Formulas
                 else if (Regex.IsMatch(token, varPattern))
                 {
                     token = normalize(token);
-                    if (!validate(token))
+                    if (!validate(token) || !Regex.IsMatch(token, varPattern))
                     {
                         throw new FormulaFormatException("");
                     }
@@ -386,6 +386,15 @@ namespace Formulas
                     yield return s;
                 }
             }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public ISet<string> GetVariables()
+        {
+            return new HashSet<string>(_tokenList.Where(s => Regex.IsMatch(s, @"[a-zA-Z][0-9a-zA-Z]*")));
         }
 
         /// <summary>

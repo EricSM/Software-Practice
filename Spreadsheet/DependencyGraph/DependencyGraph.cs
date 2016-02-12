@@ -69,9 +69,24 @@ namespace Dependencies
         /// <param name="dependencyGraph"></param>
         public DependencyGraph(DependencyGraph dependencyGraph)
         {
-            _dependents = dependencyGraph._dependents;
-            _dependees = dependencyGraph._dependees;
-            _size = dependencyGraph.Size;
+            _dependents = new Dictionary<string, HashSet<string>>();
+            _dependees = new Dictionary<string, HashSet<string>>();
+
+            // Copy entries of dependents from existing dependency graph into this one.
+            foreach (KeyValuePair<string, HashSet<string>> entry in dependencyGraph._dependents)
+            {
+                // Create a new copy of dependents hash set of this key and add it.
+                _dependents.Add(entry.Key, new HashSet<string>(entry.Value));
+            }
+
+            // Copy entries of dependees from existing dependency graph into this one.
+            foreach (KeyValuePair<string, HashSet<string>> entry in dependencyGraph._dependees)
+            {
+                // Create a new copy of dependees hash set of this key and add it.
+                _dependees.Add(entry.Key, new HashSet<string>(entry.Value));
+            }
+
+            _size = dependencyGraph.Size;// Set size equal to size of existing dependency graph.
         }
 
         /// <summary>

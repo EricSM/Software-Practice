@@ -77,14 +77,14 @@ namespace Formulas
             }
 
             // Check to make sure first token is a number, a variable, or an opening parenthesis.
-            if (!Regex.IsMatch(rawTokenList.First(), String.Format("({0}) | ({1}) | ({2})", lpPattern, varPattern, doublePattern), 
+            if (!Regex.IsMatch(rawTokenList.First(), string.Format("({0}) | ({1}) | ({2})", lpPattern, varPattern, doublePattern), 
                 ignoreSpaceOption)) 
             {
                 throw new FormulaFormatException("The first token of a formula must be a number, a variable, or an opening parenthesis");
             }
 
             // Check to make sure last token is a number, a variable, or a closing parenthesis.
-            if (!Regex.IsMatch(rawTokenList.Last(), String.Format("({0}) | ({1}) | ({2})", rpPattern, varPattern, doublePattern), 
+            if (!Regex.IsMatch(rawTokenList.Last(), string.Format("({0}) | ({1}) | ({2})", rpPattern, varPattern, doublePattern), 
                 ignoreSpaceOption)) 
             {
                 throw new FormulaFormatException("The last token of a formula must be a number, a variable, or a closing parenthesis");
@@ -115,7 +115,7 @@ namespace Formulas
 
                 }
                 // Check for invalid tokens with regex.
-                else if (!Regex.IsMatch(token, String.Format("({0}) | ({1})",
+                else if (!Regex.IsMatch(token, string.Format("^({0})$ | ({1})",
                     opPattern, doublePattern), ignoreSpaceOption))
                 {
                     throw new FormulaFormatException("There cannot be invalid tokens");
@@ -131,7 +131,7 @@ namespace Formulas
                 if (!string.IsNullOrEmpty(lastToken))
                 {
                     // Make sure operators and opening parentheses are followed by a number or opening parenthesis.
-                    if (Regex.IsMatch(lastToken, string.Format("({0}) | ({1})", lpPattern, opPattern), ignoreSpaceOption) &&
+                    if (Regex.IsMatch(lastToken, string.Format("({0}) | ^({1})$", lpPattern, opPattern), ignoreSpaceOption) &&
                         !Regex.IsMatch(token, string.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, lpPattern),
                         ignoreSpaceOption))
                     {
@@ -141,7 +141,7 @@ namespace Formulas
                     // Make sure numbers and closing parentheses are followed by operators or closing parentheses.
                     else if (Regex.IsMatch(lastToken, string.Format("({0}) | ({1}) | ({2})", doublePattern, varPattern, rpPattern),
                             ignoreSpaceOption) &&
-                            !Regex.IsMatch(token, string.Format("({0}) | ({1})", opPattern, rpPattern), ignoreSpaceOption))
+                            !Regex.IsMatch(token, string.Format("^({0})$ | ({1})", opPattern, rpPattern), ignoreSpaceOption))
                     {
                         throw new FormulaFormatException("A number, a variable, or a closing parenthesis must followed by " +
                             "either an operator or a closing parenthesis");

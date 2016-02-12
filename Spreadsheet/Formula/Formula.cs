@@ -44,7 +44,15 @@ namespace Formulas
         }
 
         /// <summary>
-        /// 
+        /// Creates a Formula from a string that consists of a standard infix expression composed
+        /// from non-negative floating-point numbers (using C#-like syntax for double/int literals), 
+        /// variable symbols (a letter followed by zero or more letters and/or digits), left and right
+        /// parentheses, and the four binary operator symbols +, -, *, and /.  White space is
+        /// permitted between tokens, but is not required.  Uses the Validator function to enforce new
+        /// rules for variable symbols.  Uses the Normalizer function to make the variables uniform in
+        /// some way (All lower-case, for example).
+        /// If the formula is syntacticaly invalid, throws a FormulaFormatException with an 
+        /// explanatory Message.
         /// </summary>
         /// <param name="formula"></param>
         /// <param name="normalize"></param>
@@ -105,12 +113,14 @@ namespace Formulas
                 { 
                     numberOfClosingParenthesis++;
                 }
+                // Check for variables.
                 else if (Regex.IsMatch(token, varPattern))
                 {
-                    token = normalize(token);
+                    token = normalize(token); // Normalize variable.
+                    // Validate normalized token and make sure it still fulfills base requirement.
                     if (!validate(token) || !Regex.IsMatch(token, varPattern))
                     {
-                        throw new FormulaFormatException("");
+                        throw new FormulaFormatException("Invalid variable name.");
                     }
 
                 }
@@ -389,18 +399,17 @@ namespace Formulas
         }
 
         /// <summary>
-        /// 
+        /// Returns ISet containing all variables in the formula.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>ISet</returns>
         public ISet<string> GetVariables()
         {
             return new HashSet<string>(_tokenList.Where(s => Regex.IsMatch(s, @"[a-zA-Z][0-9a-zA-Z]*")));
         }
 
         /// <summary>
-        /// Returns formula.
+        /// Returns formula as a string.
         /// </summary>
-        /// <returns></returns>
         public override string ToString()
         {
             if (_tokenList == null)
@@ -423,17 +432,16 @@ namespace Formulas
     public delegate double Lookup(string s);
 
     /// <summary>
-    /// 
+    /// Used to convert variables to a canonical form.
     /// </summary>
     /// <param name="s"></param>
-    /// <returns></returns>
     public delegate string Normalizer(string s);
 
     /// <summary>
-    /// 
+    /// Used to impose extra restrictions on the validity of a variable, beyond the ones 
+    /// already built into the Formula definition.  
     /// </summary>
     /// <param name="s"></param>
-    /// <returns></returns>
     public delegate bool Validator(string s);
 
     /// <summary>

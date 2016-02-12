@@ -114,11 +114,11 @@ namespace Formulas
                     numberOfClosingParenthesis++;
                 }
                 // Check for variables.
-                else if (Regex.IsMatch(token, varPattern))
+                else if (Regex.IsMatch(token, String.Format(@"^({0})$", varPattern)))
                 {
                     token = normalize(token); // Normalize variable.
                     // Validate normalized token and make sure it still fulfills base requirement.
-                    if (!validate(token) || !Regex.IsMatch(token, varPattern))
+                    if (!validate(token) || !Regex.IsMatch(token, String.Format(@"^({0})$", varPattern)))
                     {
                         throw new FormulaFormatException("Invalid variable name.");
                     }
@@ -404,7 +404,7 @@ namespace Formulas
         /// <returns>ISet</returns>
         public ISet<string> GetVariables()
         {
-            return new HashSet<string>(_tokenList.Where(s => Regex.IsMatch(s, @"[a-zA-Z][0-9a-zA-Z]*")));
+            return new HashSet<string>(_tokenList.Where(s => Regex.IsMatch(s, @"^[a-zA-Z][0-9a-zA-Z]*$")));
         }
 
         /// <summary>

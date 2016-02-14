@@ -19,7 +19,7 @@ namespace Formulas
     /// the four binary operator symbols +, -, *, and /.  (The unary operators + and -
     /// are not allowed.)
     /// </summary>
-    public class Formula
+    public struct Formula
     {
         /// <summary>
         /// List of tokens derived from the GetTokens method with invalid tokens removed.
@@ -35,23 +35,33 @@ namespace Formulas
         /// variable symbols (a letter followed by zero or more letters and/or digits), left and right
         /// parentheses, and the four binary operator symbols +, -, *, and /.  White space is
         /// permitted between tokens, but is not required.
-        /// 
-        /// Examples of a valid parameter to this constructor are:
-        ///     "2.5e9 + x5 / 17"
-        ///     "(5 * 2) + 8"
-        ///     "x*y-2+35/9"
-        ///     
-        /// Examples of invalid parameters are:
-        ///     "_"
-        ///     "-5.3"
-        ///     "2 5 + 3"
-        /// 
         /// If the formula is syntacticaly invalid, throws a FormulaFormatException with an 
         /// explanatory Message.
         /// </summary>
-        public Formula(String formula)
+        /// <param name="formula"></param>
+        public Formula(string formula) : this(formula, s => s, s => true)
         {
-            _tokenList = GetTokens(formula).ToList(); // Use GetTokens method to get list of tokens in formula.
+        }
+
+        /// <summary>
+        /// Creates a Formula from a string that consists of a standard infix expression composed
+        /// from non-negative floating-point numbers (using C#-like syntax for double/int literals), 
+        /// variable symbols (a letter followed by zero or more letters and/or digits), left and right
+        /// parentheses, and the four binary operator symbols +, -, *, and /.  White space is
+        /// permitted between tokens, but is not required.  Uses the Validator function to enforce new
+        /// rules for variable symbols.  Uses the Normalizer function to make the variables uniform in
+        /// some way (All lower-case, for example).
+        /// If the formula is syntacticaly invalid, throws a FormulaFormatException with an 
+        /// explanatory Message.
+        /// </summary>
+        /// <param name="formula"></param>
+        /// <param name="normalize"></param>
+        /// <param name="validate"></param>
+        public Formula(String formula, Normalizer normalize, Validator validate)
+        {
+            _tokenList = new List<string>();
+
+            var rawTokenList = GetTokens(formula).ToList(); // Use GetTokens method to get list of tokens in formula.
             var numberOfOpeningParenthesis = 0;
             var numberOfClosingParenthesis = 0;
             var lastToken = String.Empty; // Previous token processed in loop.
@@ -69,28 +79,30 @@ namespace Formulas
             var ignoreSpaceOption = RegexOptions.IgnorePatternWhitespace;
 
             // Check if the token list is empty
-            if (_tokenList.Count == 0) 
+            if (rawTokenList.Count == 0) 
             {
                 throw new FormulaFormatException("Formula must have at least one number or variable");
             }
 
             // Check to make sure first token is a number, a variable, or an opening parenthesis.
-            if (!Regex.IsMatch(_tokenList.First(), String.Format("({0}) | ({1}) | ({2})", lpPattern, varPattern, doublePattern), 
+            if (!Regex.IsMatch(rawTokenList.First(), string.Format("({0}) | ({1}) | ({2})", lpPattern, varPattern, doublePattern), 
                 ignoreSpaceOption)) 
             {
                 throw new FormulaFormatException("The first token of a formula must be a number, a variable, or an opening parenthesis");
             }
 
             // Check to make sure last token is a number, a variable, or a closing parenthesis.
-            if (!Regex.IsMatch(_tokenList.Last(), String.Format("({0}) | ({1}) | ({2})", rpPattern, varPattern, doublePattern), 
+            if (!Regex.IsMatch(rawTokenList.Last(), string.Format("({0}) | ({1}) | ({2})", rpPattern, varPattern, doublePattern), 
                 ignoreSpaceOption)) 
             {
                 throw new FormulaFormatException("The last token of a formula must be a number, a variable, or a closing parenthesis");
             }
 
             // Iterate through tokens to make sure formula is valid.
-            foreach (string token in _tokenList) 
+            foreach (string rawToken in rawTokenList) 
             {
+                var token = rawToken;
+
                 // Check for opening parenthesis.
                 if (Regex.IsMatch(token, lpPattern))
                 {
@@ -101,9 +113,20 @@ namespace Formulas
                 { 
                     numberOfClosingParenthesis++;
                 }
+                // Check for variables.
+                else if (Regex.IsMatch(token, String.Format(@"^({0})$", varPattern)))
+                {
+                    token = normalize(token); // Normalize variable.
+                    // Validate normalized token and make sure it still fulfills base requirement.
+                    if (!validate(token) || !Regex.IsMatch(token, String.Format(@"^({0})$", varPattern)))
+                    {
+                        throw new FormulaFormatException("Invalid variable name.");
+                    }
+
+                }
                 // Check for invalid tokens with regex.
-                else if (!Regex.IsMatch(token, String.Format("({0}) | ({1}) | ({2}) | ({3}) | ({4})",
-                    lpPattern, rpPattern, opPattern, varPattern, doublePattern), ignoreSpaceOption))
+                else if (!Regex.IsMatch(token, string.Format("^({0})$ | ({1})",
+                    opPattern, doublePattern), ignoreSpaceOption))
                 {
                     throw new FormulaFormatException("There cannot be invalid tokens");
                 }
@@ -113,7 +136,7 @@ namespace Formulas
                 {
                     throw new FormulaFormatException("All closing parentheses must have corresponding opening parenthesis");
                 }
-                // TODO fix
+                
                 // If this token is not the first one:
                 if (!string.IsNullOrEmpty(lastToken))
                 {
@@ -134,6 +157,8 @@ namespace Formulas
                             "either an operator or a closing parenthesis");
                     }
                 }
+
+                _tokenList.Add(token);
 
                 // Finished vetting token, now loop moves on to next and this one becomes the "lastToken".
                 lastToken = token;
@@ -157,6 +182,11 @@ namespace Formulas
         /// </summary>
         public double Evaluate(Lookup lookup)
         {
+            if (_tokenList == null)
+            {
+                return 0;
+            }
+
             var valueStack = new Stack<double>(); // Stack of variables and doubles
             var operatorStack = new Stack<string>(); // Stack of operators.
             double number; // Current value of token if it is a double or variable.
@@ -367,6 +397,28 @@ namespace Formulas
                 }
             }
         }
+
+        /// <summary>
+        /// Returns ISet containing all variables in the formula.
+        /// </summary>
+        /// <returns>ISet</returns>
+        public ISet<string> GetVariables()
+        {
+            return new HashSet<string>(_tokenList.Where(s => Regex.IsMatch(s, @"^[a-zA-Z][0-9a-zA-Z]*$")));
+        }
+
+        /// <summary>
+        /// Returns formula as a string.
+        /// </summary>
+        public override string ToString()
+        {
+            if (_tokenList == null)
+            {
+                return "0";
+            }
+
+            return string.Join("", _tokenList);
+        }
     }
     
 
@@ -378,6 +430,19 @@ namespace Formulas
     /// don't is up to the implementation of the method.
     /// </summary>
     public delegate double Lookup(string s);
+
+    /// <summary>
+    /// Used to convert variables to a canonical form.
+    /// </summary>
+    /// <param name="s"></param>
+    public delegate string Normalizer(string s);
+
+    /// <summary>
+    /// Used to impose extra restrictions on the validity of a variable, beyond the ones 
+    /// already built into the Formula definition.  
+    /// </summary>
+    /// <param name="s"></param>
+    public delegate bool Validator(string s);
 
     /// <summary>
     /// Used to report that a Lookup delegate is unable to determine the value

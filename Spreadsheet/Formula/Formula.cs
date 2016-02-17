@@ -404,6 +404,11 @@ namespace Formulas
         /// <returns>ISet</returns>
         public ISet<string> GetVariables()
         {
+            if (_tokenList == null)
+            {
+                return new HashSet<string>();
+            }
+
             return new HashSet<string>(_tokenList.Where(s => Regex.IsMatch(s, @"^[a-zA-Z][0-9a-zA-Z]*$")));
         }
 

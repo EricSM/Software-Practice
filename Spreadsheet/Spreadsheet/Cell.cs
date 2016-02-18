@@ -9,8 +9,8 @@ namespace SS
 {
     class Cell
     {
-        public object Content { get; }
-        public object Value { get; }
+        public object Content { get; set; }
+        public object Value { get; set; }
 
         
         public Cell(double value)

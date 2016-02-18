@@ -9,7 +9,7 @@ using System.Text.RegularExpressions;
 
 namespace SS
 {
-    class Spreadsheet : AbstractSpreadsheet
+    public class Spreadsheet : AbstractSpreadsheet
     {
         private DependencyGraph _dependencies;
         private Dictionary<string, Cell> _cells;
@@ -64,17 +64,31 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, Formula formula)
         {
-            if (formula as object == null)
-            {
-                throw new ArgumentNullException();
-            }
-            else if (name == null || !IsValid(name))
+            if (name == null || !IsValid(name))
             {
                 throw new InvalidNameException();
             }
 
-            GetCellsToRecalculate(name);
-            throw new NotImplementedException();
+            if (_cells.ContainsKey(name))
+            {
+                _cells[name].Content = formula;
+                _cells[name].Value = formula.Evaluate(s => (double) _cells[s].Value);
+            }
+            else
+            {
+                _cells.Add(name, new Cell(formula, formula.Evaluate(s => (double) _cells[s].Value)));
+            }
+
+
+            var dependentCells = GetCellsToRecalculate(name);
+            foreach (string cell in dependentCells)
+            {
+                _cells[cell].Value = formula.Evaluate(s => (double) _cells[s].Value);
+            }
+
+            _dependencies.ReplaceDependees(name, formula.GetVariables());
+
+            return new HashSet<string>(dependentCells);
         }
 
         /// <summary>
@@ -99,7 +113,8 @@ namespace SS
 
             if (_cells.ContainsKey(name))
             {
-                _cells[name] = new Cell(text);
+                _cells[name].Content = text;
+                _cells[name].Value = text;
             }
             else
             {
@@ -125,7 +140,8 @@ namespace SS
 
             if (_cells.ContainsKey(name))
             {
-                _cells[name] = new Cell(number);
+                _cells[name].Content = number;
+                _cells[name].Value = number;
             }
             else
             { 

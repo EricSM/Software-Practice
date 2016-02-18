@@ -64,6 +64,16 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, Formula formula)
         {
+            if (formula as object == null)
+            {
+                throw new ArgumentNullException();
+            }
+            else if (name == null || !IsValid(name))
+            {
+                throw new InvalidNameException();
+            }
+
+            GetCellsToRecalculate(name);
             throw new NotImplementedException();
         }
 
@@ -137,7 +147,18 @@ namespace SS
         /// </summary>
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
-            throw new NotImplementedException();
+            if (name == null)
+            {
+                throw new ArgumentNullException();
+            }
+            else if (!IsValid(name))
+            {
+                throw new InvalidNameException();
+            }
+            else
+            {
+                return _dependencies.GetDependents(name);
+            }
         }
 
         private bool IsValid(string name)

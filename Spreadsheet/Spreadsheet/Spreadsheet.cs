@@ -1,19 +1,28 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using Formulas;
 using Dependencies;
 using System.Text.RegularExpressions;
 
 namespace SS
 {
+    /// <summary>
+    /// A Spreadsheet represents the state of a spreadsheet.  A 
+    /// spreadsheet consists of an infinite number of named cells.
+    /// A string is a cell name if and only if it consists of one or more letters, 
+    /// followed by a non-zero digit, followed by zero or more digits.  Cell names
+    /// are not case sensitive. In an empty spreadsheet, the contents of every cell is the empty string.
+    /// Spreadsheets are never allowed to contain a combination of Formulas that establish
+    /// a circular dependency.
+    /// </summary>
     public class Spreadsheet : AbstractSpreadsheet
     {
         private DependencyGraph _dependencies;
         private Dictionary<string, Cell> _cells;
 
+        /// <summary>
+        /// Creates an empty Spreadsheet.
+        /// </summary>
         public Spreadsheet()
         {
             _dependencies = new DependencyGraph();
@@ -33,7 +42,11 @@ namespace SS
                 throw new InvalidNameException();
             }
 
-            return _cells[name].Content;
+            if (_cells.ContainsKey(name.ToUpper()))
+            {
+                return _cells[name.ToUpper()].Content;
+            }
+            else return string.Empty;
         }
 
         /// <summary>
@@ -43,7 +56,7 @@ namespace SS
         {
             foreach (KeyValuePair<string, Cell> cell in _cells)
             {
-                if (string.IsNullOrEmpty(cell.Value.Content.ToString()))
+                if (!string.IsNullOrEmpty(cell.Value.Content.ToString()))
                 {
                     yield return cell.Key;
                 }
@@ -69,22 +82,39 @@ namespace SS
                 throw new InvalidNameException();
             }
 
-            if (_cells.ContainsKey(name))
+
+
+            var newDependees = new HashSet<string>();
+            foreach (string var in formula.GetVariables())
             {
-                _cells[name].Content = formula;
-                _cells[name].Value = formula.Evaluate(s => (double) _cells[s].Value);
+                newDependees.Add(var.ToUpper());
+            }
+
+            _dependencies.ReplaceDependees(name.ToUpper(), newDependees);
+            var dependentCells = GetCellsToRecalculate(name.ToUpper());
+
+
+
+            object value;
+            try
+            {
+                value = formula.Evaluate(s => (double)_cells[s].Value);
+            }
+            catch (Exception e)
+            {
+                value = new FormulaError(e.Message);
+            }
+
+            if (_cells.ContainsKey(name.ToUpper()))
+            {
+                _cells[name.ToUpper()].Content = formula;
+                _cells[name.ToUpper()].Value = value;
             }
             else
             {
-                _cells.Add(name, new Cell(formula, formula.Evaluate(s => (double) _cells[s].Value)));
+                _cells.Add(name.ToUpper(), new Cell(formula, value));
             }
 
-
-            var dependentCells = GetCellsToRecalculate(name);
-            foreach (string cell in dependentCells)
-            {
-                _cells[cell].Value = formula.Evaluate(s => (double) _cells[s].Value);
-            }
 
             _dependencies.ReplaceDependees(name, formula.GetVariables());
 
@@ -111,14 +141,14 @@ namespace SS
                 throw new InvalidNameException();
             }
 
-            if (_cells.ContainsKey(name))
+            if (_cells.ContainsKey(name.ToUpper()))
             {
-                _cells[name].Content = text;
-                _cells[name].Value = text;
+                _cells[name.ToUpper()].Content = text;
+                _cells[name.ToUpper()].Value = text;
             }
             else
             {
-                _cells.Add(name, new Cell(text));
+                _cells.Add(name.ToUpper(), new Cell(text));
             }
 
             return new HashSet<string>(GetCellsToRecalculate(name));
@@ -138,14 +168,14 @@ namespace SS
                 throw new InvalidNameException();
             }
 
-            if (_cells.ContainsKey(name))
+            if (_cells.ContainsKey(name.ToUpper()))
             {
-                _cells[name].Content = number;
-                _cells[name].Value = number;
+                _cells[name.ToUpper()].Content = number;
+                _cells[name.ToUpper()].Value = number;
             }
             else
             { 
-                _cells.Add(name, new Cell(name));
+                _cells.Add(name.ToUpper(), new Cell(number));
             }
 
             return new HashSet<string>(GetCellsToRecalculate(name));
@@ -163,22 +193,28 @@ namespace SS
         /// </summary>
         protected override IEnumerable<string> GetDirectDependents(string name)
         {
-            if (name == null)
+            if (name == null)// Check if name is null.
             {
                 throw new ArgumentNullException();
             }
-            else if (!IsValid(name))
+            else if (!IsValid(name))// Check if name is invalid.
             {
                 throw new InvalidNameException();
             }
-            else
+            else // Return the dependents of the named cell.
             {
-                return _dependencies.GetDependents(name);
+                return _dependencies.GetDependents(name.ToUpper());
             }
         }
 
+        /// <summary>
+        /// Makes sure cell name is at least one letter followed by at least one digit.
+        /// </summary>
+        /// <param name="name"></param>
+        /// <returns></returns>
         private bool IsValid(string name)
         {
+            // Check for name validity.
             return Regex.IsMatch(name, @"^([a-zA-Z]+)([1-9])(\d*)$");
         }
     }

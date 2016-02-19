@@ -169,7 +169,7 @@ namespace SS
             }
 
             // Return all dependents of this cell.
-            return new HashSet<string>(GetCellsToRecalculate(name));
+            return new HashSet<string>(GetCellsToRecalculate(name.ToUpper()));
         }
 
         /// <summary>
@@ -199,7 +199,7 @@ namespace SS
             }
 
             // Return all dependents of this cell.
-            return new HashSet<string>(GetCellsToRecalculate(name));
+            return new HashSet<string>(GetCellsToRecalculate(name.ToUpper()));
         }
 
         /// <summary>

@@ -98,6 +98,9 @@ namespace SS
             foreach (string var in formula.GetVariables())
             {
                 newDependees.Add(var.ToUpper());
+
+                // add variables to hash table of cells if they dont already exist.
+                if (!_cells.ContainsKey(var.ToUpper())) _cells.Add(var.ToUpper(), new Cell(""));
             }
 
             // Replace old dependees with new ones found in formula.
@@ -128,8 +131,6 @@ namespace SS
                 _cells.Add(name.ToUpper(), new Cell(formula, value));
             }
 
-
-            _dependencies.ReplaceDependees(name, formula.GetVariables());
 
             // Return all dependents of this cell.
             return new HashSet<string>(dependentCells);

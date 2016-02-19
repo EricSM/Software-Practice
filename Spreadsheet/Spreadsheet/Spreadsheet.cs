@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Name: Eric Miramontes
+// Uid: u0801584
+
+using System;
 using System.Collections.Generic;
 using Formulas;
 using Dependencies;
@@ -17,7 +20,14 @@ namespace SS
     /// </summary>
     public class Spreadsheet : AbstractSpreadsheet
     {
+        /// <summary>
+        /// Dependency graph of the spreadsheet.
+        /// </summary>
         private DependencyGraph _dependencies;
+
+        /// <summary>
+        /// Hash table of the list of cells.
+        /// </summary>
         private Dictionary<string, Cell> _cells;
 
         /// <summary>
@@ -37,7 +47,7 @@ namespace SS
         /// </summary>
         public override object GetCellContents(string name)
         {
-            if (string.IsNullOrEmpty(name) || !IsValid(name))
+            if (name == null || !IsValid(name))// Check if name is null or invalid.
             {
                 throw new InvalidNameException();
             }
@@ -77,20 +87,23 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, Formula formula)
         {
-            if (name == null || !IsValid(name))
+            if (name == null || !IsValid(name))// Check if name is null or invalid.
             {
                 throw new InvalidNameException();
             }
 
 
-
+            // Get all the variables from formula and normalize them.
             var newDependees = new HashSet<string>();
             foreach (string var in formula.GetVariables())
             {
                 newDependees.Add(var.ToUpper());
             }
 
+            // Replace old dependees with new ones found in formula.
             _dependencies.ReplaceDependees(name.ToUpper(), newDependees);
+
+            // Get all dependents of this formula. (Throws exception if changes result in circular dependency.)
             var dependentCells = GetCellsToRecalculate(name.ToUpper());
 
 
@@ -98,19 +111,19 @@ namespace SS
             object value;
             try
             {
-                value = formula.Evaluate(s => (double)_cells[s].Value);
+                value = formula.Evaluate(s => (double)_cells[s].Value); // Evaluate formula
             }
-            catch (Exception e)
+            catch (Exception e) // If it fails, value is a FormulaError.
             {
                 value = new FormulaError(e.Message);
             }
 
-            if (_cells.ContainsKey(name.ToUpper()))
+            if (_cells.ContainsKey(name.ToUpper())) // Update cell if it exists.
             {
                 _cells[name.ToUpper()].Content = formula;
                 _cells[name.ToUpper()].Value = value;
             }
-            else
+            else // Add new cell.
             {
                 _cells.Add(name.ToUpper(), new Cell(formula, value));
             }
@@ -118,6 +131,7 @@ namespace SS
 
             _dependencies.ReplaceDependees(name, formula.GetVariables());
 
+            // Return all dependents of this cell.
             return new HashSet<string>(dependentCells);
         }
 
@@ -132,25 +146,28 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, string text)
         {
-            if (text == null)
+            if (text == null)// Check if text is null.
             {
                 throw new ArgumentNullException();
             }
-            else if (name == null || !IsValid(name))
+            else if (name == null || !IsValid(name))// Check if name is null or invalid.
             {
                 throw new InvalidNameException();
             }
 
-            if (_cells.ContainsKey(name.ToUpper()))
+            if (_cells.ContainsKey(name.ToUpper()))// Check if this cell exists.
             {
+                // Update cell.
                 _cells[name.ToUpper()].Content = text;
                 _cells[name.ToUpper()].Value = text;
             }
             else
             {
+                // Add new cell to hash table if it does not already exist.
                 _cells.Add(name.ToUpper(), new Cell(text));
             }
 
+            // Return all dependents of this cell.
             return new HashSet<string>(GetCellsToRecalculate(name));
         }
 
@@ -163,21 +180,24 @@ namespace SS
         /// </summary>
         public override ISet<string> SetCellContents(string name, double number)
         {
-            if (name == null || !IsValid(name))
+            if (name == null || !IsValid(name))// Check if name is null or invalid.
             {
                 throw new InvalidNameException();
             }
 
-            if (_cells.ContainsKey(name.ToUpper()))
+            if (_cells.ContainsKey(name.ToUpper()))// Check if cell exists.
             {
+                // Update cell.
                 _cells[name.ToUpper()].Content = number;
                 _cells[name.ToUpper()].Value = number;
             }
             else
-            { 
+            {
+                // Add new cell to hash table if it does not already exist.
                 _cells.Add(name.ToUpper(), new Cell(number));
             }
 
+            // Return all dependents of this cell.
             return new HashSet<string>(GetCellsToRecalculate(name));
         }
 

@@ -60,11 +60,18 @@ namespace SpreadsheetTestCases
             Assert.AreEqual(ss.GetCellContents("a1"), "Hello World");
         }
 
-        
+        [TestMethod]
+        public void TestSetCellContents3()
+        {
+            Spreadsheet ss = new Spreadsheet();
+            ss.SetCellContents("a1", new Formula("a2 + a3"));
+            Assert.IsTrue(string.Equals(ss.GetCellContents("a1").ToString(), new Formula("A2+A3").ToString(),
+                StringComparison.InvariantCultureIgnoreCase));
+        }
 
         [TestMethod]
         [ExpectedException(typeof(ArgumentNullException))]
-        public void TestSetCellContents3()
+        public void TestSetCellContents4()
         {
             Spreadsheet ss = new Spreadsheet();
             ss.SetCellContents("a1", null);
@@ -72,7 +79,7 @@ namespace SpreadsheetTestCases
 
         [TestMethod]
         [ExpectedException(typeof(InvalidNameException))]
-        public void TestSetCellContents4()
+        public void TestSetCellContents5()
         {
             Spreadsheet ss = new Spreadsheet();
             ss.SetCellContents("1a", "Hello World");
@@ -80,7 +87,7 @@ namespace SpreadsheetTestCases
 
         [TestMethod]
         [ExpectedException(typeof(InvalidNameException))]
-        public void TestSetCellContents5()
+        public void TestSetCellContents6()
         {
             Spreadsheet ss = new Spreadsheet();
             ss.SetCellContents("1a", 0d);
@@ -88,14 +95,14 @@ namespace SpreadsheetTestCases
 
         [TestMethod]
         [ExpectedException(typeof(InvalidNameException))]
-        public void TestSetCellContents6()
+        public void TestSetCellContents7()
         {
             Spreadsheet ss = new Spreadsheet();
             ss.SetCellContents("1a", new Formula());
         }
 
         [TestMethod]
-        public void TestSetCellContents7()
+        public void TestSetCellContents8()
         {
             Spreadsheet ss = new Spreadsheet();
             ss.SetCellContents("a1", new Formula("a2"));

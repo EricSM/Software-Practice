@@ -6,6 +6,7 @@ using System.Collections.Generic;
 using Formulas;
 using Dependencies;
 using System.Text.RegularExpressions;
+using System.IO;
 
 namespace SS
 {
@@ -29,6 +30,19 @@ namespace SS
         /// Hash table of the list of cells.
         /// </summary>
         private Dictionary<string, Cell> _cells;
+
+        public override bool Changed
+        {
+            get
+            {
+                throw new NotImplementedException();
+            }
+
+            protected set
+            {
+                throw new NotImplementedException();
+            }
+        }
 
         /// <summary>
         /// Creates an empty Spreadsheet.
@@ -85,7 +99,7 @@ namespace SS
         /// Set consisting of name plus the names of all other cells whose value depends,
         /// directly or indirectly, on the named cell.
         /// </summary>
-        public override ISet<string> SetCellContents(string name, Formula formula)
+        protected override ISet<string> SetCellContents(string name, Formula formula)
         {
             if (name == null || !IsValid(name))// Check if name is null or invalid.
             {
@@ -145,7 +159,7 @@ namespace SS
         /// set consisting of name plus the names of all other cells whose value depends, 
         /// directly or indirectly, on the named cell.
         /// </summary>
-        public override ISet<string> SetCellContents(string name, string text)
+        protected override ISet<string> SetCellContents(string name, string text)
         {
             if (text == null)// Check if text is null.
             {
@@ -179,7 +193,7 @@ namespace SS
         /// set consisting of name plus the names of all other cells whose value depends, 
         /// directly or indirectly, on the named cell.
         /// </summary>
-        public override ISet<string> SetCellContents(string name, double number)
+        protected override ISet<string> SetCellContents(string name, double number)
         {
             if (name == null || !IsValid(name))// Check if name is null or invalid.
             {
@@ -237,6 +251,21 @@ namespace SS
         {
             // Check for name validity.
             return Regex.IsMatch(name, @"^([a-zA-Z]+)([1-9])(\d*)$");
+        }
+
+        public override void Save(TextWriter dest)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override object GetCellValue(string name)
+        {
+            throw new NotImplementedException();
+        }
+
+        public override ISet<string> SetContentsOfCell(string name, string content)
+        {
+            throw new NotImplementedException();
         }
     }
 }

@@ -31,6 +31,8 @@ namespace SS
         /// </summary>
         private Dictionary<string, Cell> _cells;
 
+        private Regex _isValid;
+
         // ADDED FOR PS6
         /// <summary>
         /// True if this spreadsheet has been modified since it was created or saved
@@ -45,6 +47,15 @@ namespace SS
         {
             _dependencies = new DependencyGraph();
             _cells = new Dictionary<string, Cell>();
+            _isValid = new Regex(".*");
+        }
+
+        /// Creates an empty Spreadsheet whose IsValid regular expression is provided as the parameter
+        public Spreadsheet(Regex isValid)
+        {
+            _dependencies = new DependencyGraph();
+            _cells = new Dictionary<string, Cell>();
+            _isValid = isValid;
         }
 
         /// <summary>
@@ -55,7 +66,7 @@ namespace SS
         /// </summary>
         public override object GetCellContents(string name)
         {
-            if (name == null || !IsValid(name))// Check if name is null or invalid.
+            if (name == null || !IsValid(name.ToUpper()))// Check if name is null or invalid.
             {
                 throw new InvalidNameException();
             }
@@ -94,7 +105,7 @@ namespace SS
         /// </summary>
         protected override ISet<string> SetCellContents(string name, Formula formula)
         {
-            if (name == null || !IsValid(name))// Check if name is null or invalid.
+            if (name == null || !IsValid(name.ToUpper()))// Check if name is null or invalid.
             {
                 throw new InvalidNameException();
             }
@@ -159,7 +170,7 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            else if (name == null || !IsValid(name))// Check if name is null or invalid.
+            else if (name == null || !IsValid(name.ToUpper()))// Check if name is null or invalid.
             {
                 throw new InvalidNameException();
             }
@@ -189,7 +200,7 @@ namespace SS
         /// </summary>
         protected override ISet<string> SetCellContents(string name, double number)
         {
-            if (name == null || !IsValid(name))// Check if name is null or invalid.
+            if (name == null || !IsValid(name.ToUpper()))// Check if name is null or invalid.
             {
                 throw new InvalidNameException();
             }
@@ -226,7 +237,7 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            else if (!IsValid(name))// Check if name is invalid.
+            else if (!IsValid(name.ToUpper()))// Check if name is invalid.
             {
                 throw new InvalidNameException();
             }
@@ -244,7 +255,7 @@ namespace SS
         private bool IsValid(string name)
         {
             // Check for name validity.
-            return Regex.IsMatch(name, @"^([a-zA-Z]+)([1-9])(\d*)$");
+            return Regex.IsMatch(name, @"^([a-zA-Z]+)([1-9])(\d*)$") && _isValid.IsMatch(name);
         }
 
         public override void Save(TextWriter dest)
@@ -261,7 +272,7 @@ namespace SS
         /// </summary>
         public override object GetCellValue(string name)
         {
-            if (name == null || !IsValid(name))
+            if (name == null || !IsValid(name.ToUpper()))
             {
                 throw new InvalidNameException();
             }
@@ -312,7 +323,7 @@ namespace SS
             {
                 throw new ArgumentNullException();
             }
-            else if (name == null || !IsValid(name))
+            else if (name == null || !IsValid(name.ToUpper()))
             {
                 throw new InvalidNameException();
             }

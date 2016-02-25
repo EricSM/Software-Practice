@@ -276,7 +276,7 @@ namespace Formulas
                             // Make sure divisor is not 0.
                             if (valueStack.Peek() == 0)
                             {
-                                throw new FormulaEvaluationException("");
+                                throw new FormulaEvaluationException("Cannot divide by 0");
                             }
                             valueStack.Push(1 / valueStack.Pop() * valueStack.Pop());
                         }

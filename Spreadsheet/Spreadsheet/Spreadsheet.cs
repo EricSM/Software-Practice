@@ -336,7 +336,7 @@ namespace SS
             }
             else if (content.StartsWith("="))
             {
-                Formula formula = new Formula(content, s => s.ToUpper(), s => IsValid(s));
+                Formula formula = new Formula(content.Substring(1), s => s.ToUpper(), s => IsValid(s));
                 cellsToRecalculate = SetCellContents(normalizedName, formula);
                 Changed = true;
             }
@@ -344,6 +344,30 @@ namespace SS
             {
                 cellsToRecalculate = SetCellContents(name, content);
                 Changed = true;
+            }
+
+
+            foreach (string cell in cellsToRecalculate)
+            {
+                try
+                {
+                    if (_cells[cell].Content is Formula)
+                    {
+                        _cells[cell].Value = ((Formula)_cells[cell].Content).Evaluate(s =>
+                        {
+                            var value = GetCellValue(s);
+                            if (value is FormulaError || value is string)
+                            {
+                                throw new UndefinedVariableException(s);
+                            }
+                            return (double)value;
+                        });
+                    }
+                }
+                catch (FormulaEvaluationException e)
+                {
+                    _cells[cell].Value = new FormulaError(e.Message);
+                }
             }
 
 

@@ -318,23 +318,36 @@ namespace SS
         public override ISet<string> SetContentsOfCell(string name, string content)
         {
             double result;
+            ISet<string> cellsToRecalculate;
+            var normalizedName = name.ToUpper();
 
             if (content == null)
             {
                 throw new ArgumentNullException();
             }
-            else if (name == null || !IsValid(name.ToUpper()))
+            else if (name == null || !IsValid(normalizedName))
             {
                 throw new InvalidNameException();
             }
             else if (double.TryParse(content, out result))
-            {
+            {                
+                cellsToRecalculate = SetCellContents(normalizedName, result);
                 Changed = true;
-                return SetCellContents(name, result);
+            }
+            else if (content.StartsWith("="))
+            {
+                Formula formula = new Formula(content, s => s.ToUpper(), s => IsValid(s));
+                cellsToRecalculate = SetCellContents(normalizedName, formula);
+                Changed = true;
+            }
+            else
+            {
+                cellsToRecalculate = SetCellContents(name, content);
+                Changed = true;
             }
 
 
-            throw new NotImplementedException();
+            return cellsToRecalculate;
         }
     }
 }

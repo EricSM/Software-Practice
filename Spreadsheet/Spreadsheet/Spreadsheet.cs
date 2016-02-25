@@ -31,18 +31,12 @@ namespace SS
         /// </summary>
         private Dictionary<string, Cell> _cells;
 
-        public override bool Changed
-        {
-            get
-            {
-                throw new NotImplementedException();
-            }
-
-            protected set
-            {
-                throw new NotImplementedException();
-            }
-        }
+        // ADDED FOR PS6
+        /// <summary>
+        /// True if this spreadsheet has been modified since it was created or saved
+        /// (whichever happened most recently); false otherwise.
+        /// </summary>
+        public override bool Changed { get; protected set; }
 
         /// <summary>
         /// Creates an empty Spreadsheet.
@@ -65,8 +59,7 @@ namespace SS
             {
                 throw new InvalidNameException();
             }
-
-            if (_cells.ContainsKey(name.ToUpper()))
+            else if (_cells.ContainsKey(name.ToUpper()))
             {
                 return _cells[name.ToUpper()].Content;
             }
@@ -106,6 +99,7 @@ namespace SS
                 throw new InvalidNameException();
             }
 
+            var normalizedName = name.ToUpper();
 
             // Get all the variables from formula and normalize them.
             var newDependees = new HashSet<string>();
@@ -117,37 +111,37 @@ namespace SS
                 if (!_cells.ContainsKey(var.ToUpper())) _cells.Add(var.ToUpper(), new Cell(""));
             }
 
-            // Replace old dependees with new ones found in formula.
-            _dependencies.ReplaceDependees(name.ToUpper(), newDependees);
 
-            // Get all dependents of this formula. (Throws exception if changes result in circular dependency.)
-            var dependentCells = GetCellsToRecalculate(name.ToUpper());
+            var initialDependencies = new DependencyGraph(_dependencies);
 
-
-
-            object value;
             try
             {
-                value = formula.Evaluate(s => (double)_cells[s].Value); // Evaluate formula
-            }
-            catch (Exception e) // If it fails, value is a FormulaError.
-            {
-                value = new FormulaError(e.Message);
-            }
+                // Replace old dependees with new ones found in formula.
+                _dependencies.ReplaceDependees(normalizedName, newDependees);
 
-            if (_cells.ContainsKey(name.ToUpper())) // Update cell if it exists.
-            {
-                _cells[name.ToUpper()].Content = formula;
-                _cells[name.ToUpper()].Value = value;
-            }
-            else // Add new cell.
-            {
-                _cells.Add(name.ToUpper(), new Cell(formula, value));
-            }
+                // Get all dependents of this formula. (Throws exception if changes result in circular dependency.)
+                var dependentCells = GetCellsToRecalculate(normalizedName);
+
+                if (_cells.ContainsKey(normalizedName)) // Update cell if it exists.
+                {
+                    _cells[normalizedName].Content = formula;
+                    _cells[normalizedName].Value = null;
+                }
+                else // Add new cell.
+                {
+                    _cells.Add(normalizedName, new Cell(formula, null));
+                }
 
 
-            // Return all dependents of this cell.
-            return new HashSet<string>(dependentCells);
+                // Return all dependents of this cell.
+                return new HashSet<string>(dependentCells);
+
+            }
+            catch (CircularException e)
+            {
+                _dependencies = initialDependencies;
+                throw e;
+            }
         }
 
         /// <summary>
@@ -258,13 +252,77 @@ namespace SS
             throw new NotImplementedException();
         }
 
+        // ADDED FOR PS6
+        /// <summary>
+        /// If name is null or invalid, throws an InvalidNameException.
+        ///
+        /// Otherwise, returns the value (as opposed to the contents) of the named cell.  The return
+        /// value should be either a string, a double, or a FormulaError.
+        /// </summary>
         public override object GetCellValue(string name)
         {
-            throw new NotImplementedException();
+            if (name == null || !IsValid(name))
+            {
+                throw new InvalidNameException();
+            }
+            else if (_cells.ContainsKey(name.ToUpper()))
+            {
+                return _cells[name.ToUpper()].Value;
+            }
+            else return string.Empty;
         }
 
+        // ADDED FOR PS6
+        /// <summary>
+        /// If content is null, throws an ArgumentNullException.
+        ///
+        /// Otherwise, if name is null or invalid, throws an InvalidNameException.
+        ///
+        /// Otherwise, if content parses as a double, the contents of the named
+        /// cell becomes that double.
+        ///
+        /// Otherwise, if content begins with the character '=', an attempt is made
+        /// to parse the remainder of content into a Formula f using the Formula
+        /// constructor with s => s.ToUpper() as the normalizer and a validator that
+        /// checks that s is a valid cell name as defined in the AbstractSpreadsheet
+        /// class comment.  There are then three possibilities:
+        ///
+        ///   (1) If the remainder of content cannot be parsed into a Formula, a
+        ///       Formulas.FormulaFormatException is thrown.
+        ///
+        ///   (2) Otherwise, if changing the contents of the named cell to be f
+        ///       would cause a circular dependency, a CircularException is thrown.
+        ///
+        ///   (3) Otherwise, the contents of the named cell becomes f.
+        ///
+        /// Otherwise, the contents of the named cell becomes content.
+        ///
+        /// If an exception is not thrown, the method returns a set consisting of
+        /// name plus the names of all other cells whose value depends, directly
+        /// or indirectly, on the named cell.
+        ///
+        /// For example, if name is A1, B1 contains A1*2, and C1 contains B1+A1, the
+        /// set {A1, B1, C1} is returned.
+        /// </summary>
         public override ISet<string> SetContentsOfCell(string name, string content)
         {
+            double result;
+
+            if (content == null)
+            {
+                throw new ArgumentNullException();
+            }
+            else if (name == null || !IsValid(name))
+            {
+                throw new InvalidNameException();
+            }
+            else if (double.TryParse(content, out result))
+            {
+                Changed = true;
+                return SetCellContents(name, result);
+            }
+
+
             throw new NotImplementedException();
         }
     }

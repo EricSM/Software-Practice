@@ -8,6 +8,7 @@ using Dependencies;
 using System.Text.RegularExpressions;
 using System.IO;
 using System.Xml;
+using System.Xml.Schema;
 
 namespace SS
 {
@@ -57,6 +58,77 @@ namespace SS
             _dependencies = new DependencyGraph();
             _cells = new Dictionary<string, Cell>();
             _isValid = isValid;
+        }
+
+        /// Creates a Spreadsheet that is a duplicate of the spreadsheet saved in source.
+        /// See the AbstractSpreadsheet.Save method and Spreadsheet.xsd for the file format 
+        /// specification.  If there's a problem reading source, throws an IOException
+        /// If the contents of source are not consistent with the schema in Spreadsheet.xsd, 
+        /// throws a SpreadsheetReadException.  If there is an invalid cell name, or a 
+        /// duplicate cell name, or an invalid formula in the source, throws a SpreadsheetReadException.
+        /// If there's a Formula that causes a circular dependency, throws a SpreadsheetReadException. 
+        public Spreadsheet(TextReader source)
+        {
+            // Create the XmlSchemaSet class.  Anything with the namespace "urn:states-schema" will
+            // be validated against states3.xsd.
+            XmlSchemaSet sc = new XmlSchemaSet();
+
+            sc.Add(null, "Spreadsheet.xsd");
+
+            // Configure validation.
+            XmlReaderSettings settings = new XmlReaderSettings();
+            settings.ValidationType = ValidationType.Schema;
+            settings.Schemas = sc;
+            settings.ValidationEventHandler += ValidationCallback;
+
+            using (XmlReader reader = XmlReader.Create(source, settings))
+            {
+                while (reader.Read())
+                {
+                    if (reader.IsStartElement())
+                    {
+                        switch (reader.Name)
+                        {
+                            case "spreadsheet":
+                                _isValid = new Regex(reader["IsValid"]);
+                                break;
+
+                            case "cell":
+                                var name = reader["name"];
+                                var content = reader["contents"];
+                                if (!IsValid(name))
+                                {
+                                    throw new SpreadsheetReadException("Invalid cell name");
+                                }
+                                else if (GetCellContents(name).ToString() == string.Empty)
+                                {
+                                    throw new SpreadsheetReadException("Duplicate cells");
+                                }
+                                else
+                                {
+                                    try
+                                    {
+                                        SetContentsOfCell(name, content);
+                                    }
+                                    catch (FormulaFormatException e)
+                                    {
+                                        throw new SpreadsheetReadException(e.Message);
+                                    }
+                                    catch (CircularException e)
+                                    {
+                                        throw new SpreadsheetReadException(e.Message);
+                                    }
+                                }
+                                break;
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void ValidationCallback(object sender, ValidationEventArgs e)
+        {
+            throw new SpreadsheetReadException(e.Message);
         }
 
         /// <summary>
@@ -281,46 +353,39 @@ namespace SS
         /// </summary>
         public override void Save(TextWriter dest)
         {
-            try
+            using (XmlWriter writer = XmlWriter.Create(dest))
             {
-                using (XmlWriter writer = XmlWriter.Create(dest))
+                writer.WriteStartDocument();
+                writer.WriteStartElement("spreadsheet");
+                writer.WriteAttributeString("IsValid", _isValid.ToString());
+
+                foreach (string cell in GetNamesOfAllNonemptyCells())
                 {
-                    writer.WriteStartDocument();
-                    writer.WriteStartElement("spreadsheet");
-                    writer.WriteAttributeString("IsValid", _isValid.ToString());
+                    writer.WriteStartElement("cell");
+                    writer.WriteAttributeString("name", cell);
 
-                    foreach (string cell in GetNamesOfAllNonemptyCells())
+                    var content = GetCellContents(cell);
+                    if (content is string)
                     {
-                        writer.WriteStartElement("cell");
-                        writer.WriteAttributeString("name", cell);
-
-                        var content = GetCellContents(cell);
-                        if (content is string)
-                        {
-                            writer.WriteAttributeString("contents", content as string);
-                        }
-                        else if (content is double)
-                        {
-                            writer.WriteAttributeString("contents", ((double)content).ToString());
-                        }
-                        else if (content is Formula)
-                        {
-                            writer.WriteAttributeString("contents", "=" + content.ToString());
-                        }
-
-                        writer.WriteEndElement();
+                        writer.WriteAttributeString("contents", content as string);
+                    }
+                    else if (content is double)
+                    {
+                        writer.WriteAttributeString("contents", ((double)content).ToString());
+                    }
+                    else if (content is Formula)
+                    {
+                        writer.WriteAttributeString("contents", "=" + content.ToString());
                     }
 
                     writer.WriteEndElement();
-                    writer.WriteEndDocument();
                 }
 
-                Changed = false;
+                writer.WriteEndElement();
+                writer.WriteEndDocument();
             }
-            catch (Exception e)
-            {
-                throw new IOException(e.Message);
-            }
+
+            Changed = false;
         }
 
         // ADDED FOR PS6

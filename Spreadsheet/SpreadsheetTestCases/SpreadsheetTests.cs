@@ -6,6 +6,8 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SS;
 using Formulas;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
+using System.IO;
 
 namespace SpreadsheetTestCases
 {
@@ -48,7 +50,7 @@ namespace SpreadsheetTestCases
         public void TestSetCellContents1()
         {
             Spreadsheet ss = new Spreadsheet();
-            ss.SetCellContents("a1", 1);
+            ss.SetContentsOfCell("a1", 1.ToString());
             Assert.AreEqual(ss.GetCellContents("a1"), 1d);
         }
 
@@ -56,7 +58,7 @@ namespace SpreadsheetTestCases
         public void TestSetCellContents2()
         {
             Spreadsheet ss = new Spreadsheet();
-            ss.SetCellContents("a1", "Hello World");
+            ss.SetContentsOfCell("a1", "Hello World");
             Assert.AreEqual(ss.GetCellContents("a1"), "Hello World");
         }
 
@@ -64,7 +66,7 @@ namespace SpreadsheetTestCases
         public void TestSetCellContents3()
         {
             Spreadsheet ss = new Spreadsheet();
-            ss.SetCellContents("a1", new Formula("a2 + a3"));
+            ss.SetContentsOfCell("a1", "=a2 + a3");
             Assert.IsTrue(string.Equals(ss.GetCellContents("a1").ToString(), new Formula("A2+A3").ToString(),
                 StringComparison.InvariantCultureIgnoreCase));
         }
@@ -74,7 +76,7 @@ namespace SpreadsheetTestCases
         public void TestSetCellContents4()
         {
             Spreadsheet ss = new Spreadsheet();
-            ss.SetCellContents("a1", null);
+            ss.SetContentsOfCell("a1", null);
         }
 
         [TestMethod]
@@ -82,7 +84,7 @@ namespace SpreadsheetTestCases
         public void TestSetCellContents5()
         {
             Spreadsheet ss = new Spreadsheet();
-            ss.SetCellContents("1a", "Hello World");
+            ss.SetContentsOfCell("1a", "Hello World");
         }
 
         [TestMethod]
@@ -90,7 +92,7 @@ namespace SpreadsheetTestCases
         public void TestSetCellContents6()
         {
             Spreadsheet ss = new Spreadsheet();
-            ss.SetCellContents("1a", 0d);
+            ss.SetContentsOfCell("1a", 0d.ToString());
         }
 
         [TestMethod]
@@ -98,16 +100,16 @@ namespace SpreadsheetTestCases
         public void TestSetCellContents7()
         {
             Spreadsheet ss = new Spreadsheet();
-            ss.SetCellContents("1a", new Formula());
+            ss.SetContentsOfCell("1a", "=");
         }
 
         [TestMethod]
         public void TestSetCellContents8()
         {
-            Spreadsheet ss = new Spreadsheet();
-            ss.SetCellContents("a1", new Formula("a2"));
-            ss.SetCellContents("a2", new Formula("a3"));
-            var cells = new HashSet<string>(ss.SetCellContents("a3", 0d));
+            Spreadsheet ss = new Spreadsheet(new Regex(@"^[A-Z](\d*)$"));
+            ss.SetContentsOfCell("a1", "=a2");
+            ss.SetContentsOfCell("a2", "=a3");
+            var cells = new HashSet<string>(ss.SetContentsOfCell("a3", 0d.ToString()));
 
             Assert.IsTrue(cells.SetEquals(new HashSet<string> { "A1", "A2", "A3" }));
         }
@@ -119,13 +121,24 @@ namespace SpreadsheetTestCases
         public void TestGetNamesOfAllNonemptyCells1()
         {
             Spreadsheet ss = new Spreadsheet();
+            Assert.IsFalse(ss.Changed);
+
             for (int i = 1; i <= 5; i++) // Set cells a1-5
             {
-                ss.SetCellContents("a" + i, "Hello World");
+                ss.SetContentsOfCell("a" + i, "Hello World");
             }
 
             var cells = new HashSet<string>(ss.GetNamesOfAllNonemptyCells()); // Retrieve them.
             Assert.IsTrue(cells.SetEquals(new HashSet<string> { "A1", "A2", "A3", "A4", "A5" }));
+            Assert.IsTrue(ss.Changed);
+        }
+
+        [TestMethod]
+        public void Test1()
+        {
+            Spreadsheet ss = new Spreadsheet(new StreamReader("SampleSavedSpreadsheet.xml"));
+            Assert.AreEqual((double) ss.GetCellValue("A3"), 35d, .0001);
+            Assert.AreEqual(ss.GetCellValue("B2"), "Hello");
         }
     }
 }

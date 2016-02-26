@@ -69,6 +69,9 @@ namespace SS
         /// If there's a Formula that causes a circular dependency, throws a SpreadsheetReadException. 
         public Spreadsheet(TextReader source)
         {
+            _dependencies = new DependencyGraph();
+            _cells = new Dictionary<string, Cell>();
+
             // Create the XmlSchemaSet class.  Anything with the namespace "urn:states-schema" will
             // be validated against states3.xsd.
             XmlSchemaSet sc = new XmlSchemaSet();
@@ -100,7 +103,7 @@ namespace SS
                                 {
                                     throw new SpreadsheetReadException("Invalid cell name");
                                 }
-                                else if (GetCellContents(name).ToString() == string.Empty)
+                                else if (GetCellContents(name) as string != string.Empty)
                                 {
                                     throw new SpreadsheetReadException("Duplicate cells");
                                 }

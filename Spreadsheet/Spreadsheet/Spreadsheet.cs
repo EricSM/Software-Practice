@@ -33,6 +33,9 @@ namespace SS
         /// </summary>
         private Dictionary<string, Cell> _cells;
 
+        /// <summary>
+        /// Additional restriction on the vallidity of cell names.
+        /// </summary>
         private Regex _isValid;
 
         // ADDED FOR PS6
@@ -72,8 +75,8 @@ namespace SS
             _dependencies = new DependencyGraph();
             _cells = new Dictionary<string, Cell>();
 
-            // Create the XmlSchemaSet class.  Anything with the namespace "urn:states-schema" will
-            // be validated against states3.xsd.
+            // Create the XmlSchemaSet class.  All spreadsheets will
+            // be validated against Spreadsheet.xsd.
             XmlSchemaSet sc = new XmlSchemaSet();
 
             sc.Add(null, "Spreadsheet.xsd");
@@ -93,17 +96,17 @@ namespace SS
                         switch (reader.Name)
                         {
                             case "spreadsheet":
-                                _isValid = new Regex(reader["IsValid"]);
+                                _isValid = new Regex(reader["IsValid"]); // Read in new IsValid instance.
                                 break;
 
                             case "cell":
                                 var name = reader["name"];
                                 var content = reader["contents"];
-                                if (!IsValid(name))
+                                if (!IsValid(name)) // Make sure name is valid.
                                 {
                                     throw new SpreadsheetReadException("Invalid cell name");
                                 }
-                                else if (GetCellContents(name) as string != string.Empty)
+                                else if (GetCellContents(name) as string != string.Empty) // Make sure there are no duplicates.
                                 {
                                     throw new SpreadsheetReadException("Duplicate cells");
                                 }
@@ -111,6 +114,7 @@ namespace SS
                                 {
                                     try
                                     {
+                                        // Set contents of this cell to the content.
                                         SetContentsOfCell(name, content);
                                     }
                                     catch (FormulaFormatException e)
@@ -129,6 +133,11 @@ namespace SS
             }
         }
 
+        /// <summary>
+        /// Throw SpreadsheetReadException if there is a problem reading a file.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void ValidationCallback(object sender, ValidationEventArgs e)
         {
             throw new SpreadsheetReadException(e.Message);
@@ -146,11 +155,11 @@ namespace SS
             {
                 throw new InvalidNameException();
             }
-            else if (_cells.ContainsKey(name.ToUpper()))
+            else if (_cells.ContainsKey(name.ToUpper()))// Check if cell already has been set.
             {
                 return _cells[name.ToUpper()].Content;
             }
-            else return string.Empty;
+            else return string.Empty; // Empty cells have empty strings.
         }
 
         /// <summary>
@@ -360,23 +369,23 @@ namespace SS
             {
                 writer.WriteStartDocument();
                 writer.WriteStartElement("spreadsheet");
-                writer.WriteAttributeString("IsValid", _isValid.ToString());
+                writer.WriteAttributeString("IsValid", _isValid.ToString()); // Save _isValid field.
 
-                foreach (string cell in GetNamesOfAllNonemptyCells())
+                foreach (string cell in GetNamesOfAllNonemptyCells()) // Iterate through all altered cells.
                 {
                     writer.WriteStartElement("cell");
-                    writer.WriteAttributeString("name", cell);
+                    writer.WriteAttributeString("name", cell); // Save name.
 
                     var content = GetCellContents(cell);
-                    if (content is string)
+                    if (content is string) // Check if cell content is a string.
                     {
                         writer.WriteAttributeString("contents", content as string);
                     }
-                    else if (content is double)
+                    else if (content is double) // Check if cell content is a double.
                     {
                         writer.WriteAttributeString("contents", ((double)content).ToString());
                     }
-                    else if (content is Formula)
+                    else if (content is Formula) // Check if cell content is a Formula.
                     {
                         writer.WriteAttributeString("contents", "=" + content.ToString());
                     }
@@ -388,6 +397,7 @@ namespace SS
                 writer.WriteEndDocument();
             }
 
+            // File was just saved, its cannot have been changed since.
             Changed = false;
         }
 
@@ -400,15 +410,15 @@ namespace SS
         /// </summary>
         public override object GetCellValue(string name)
         {
-            if (name == null || !IsValid(name.ToUpper()))
+            if (name == null || !IsValid(name.ToUpper()))// Check if name is null or invalid.
             {
                 throw new InvalidNameException();
             }
-            else if (_cells.ContainsKey(name.ToUpper()))
+            else if (_cells.ContainsKey(name.ToUpper()))// Check if cell already has been set.
             {
                 return _cells[name.ToUpper()].Value;
             }
-            else return string.Empty;
+            else return string.Empty; // Empty cells have empty strings.
         }
 
         // ADDED FOR PS6
@@ -447,43 +457,45 @@ namespace SS
         {
             double result;
             ISet<string> cellsToRecalculate;
-            var normalizedName = name.ToUpper();
+            var normalizedName = name.ToUpper(); // Normalize name.
 
-            if (content == null)
+            if (content == null) // Check if content is null
             {
                 throw new ArgumentNullException();
             }
-            else if (name == null || !IsValid(normalizedName))
+            else if (name == null || !IsValid(normalizedName)) // Check if name is invalid.
             {
                 throw new InvalidNameException();
             }
-            else if (double.TryParse(content, out result))
+            else if (double.TryParse(content, out result)) // Check if content is a double.
             {                
                 cellsToRecalculate = SetCellContents(normalizedName, result);
             }
-            else if (content.StartsWith("="))
+            else if (content.StartsWith("=")) // Check if content is a formula (must start with a "=").
             {
                 Formula formula = new Formula(content.Substring(1), s => s.ToUpper(), s => IsValid(s));
                 cellsToRecalculate = SetCellContents(normalizedName, formula);
             }
-            else
+            else // Content must be a string.
             {
                 cellsToRecalculate = SetCellContents(name, content);                
             }
 
 
-            foreach (string cell in cellsToRecalculate)
+            foreach (string cell in cellsToRecalculate) // Recalculate dependent cells.
             {
                 try
                 {
-                    var formulaToRecalculate = GetCellContents(cell);
+                    var formulaToRecalculate = GetCellContents(cell); // Get content (probably formula).
 
-                    if (formulaToRecalculate is Formula)
+                    if (formulaToRecalculate is Formula) // Cell originally passed in might not be a formula anymore.
                     {
+                        // Recalculate.
                         _cells[cell].Value = ((Formula)formulaToRecalculate).Evaluate(s =>
                         {
-                            var value = GetCellValue(s);
-                            if (value is FormulaError || value is string)
+                            // Lambda method for finding values of dependees.
+                            var value = GetCellValue(s); // Get value
+                            if (value is FormulaError || value is string) // Value must be a number.
                             {
                                 throw new UndefinedVariableException(s);
                             }
@@ -491,13 +503,13 @@ namespace SS
                         });
                     }
                 }
-                catch (FormulaEvaluationException e)
+                catch (FormulaEvaluationException e) // If error evaluating, set value to a FormulaError.
                 {
                     _cells[cell].Value = new FormulaError(e.Message);
                 }
             }
 
-            Changed = true;
+            Changed = true; // Spreadsheet was just changed.
 
             return cellsToRecalculate;
         }

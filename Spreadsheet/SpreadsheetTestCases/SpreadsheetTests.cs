@@ -136,31 +136,36 @@ namespace SpreadsheetTestCases
         [TestMethod]
         public void TestConstructor1()
         {
-            Spreadsheet ss = new Spreadsheet(new StreamReader("SampleSavedSpreadsheet.xml"));
-            Assert.AreEqual((double) ss.GetCellValue("A3"), 35d, .0001);
-            Assert.AreEqual(ss.GetCellValue("B2"), "Hello");
+            Spreadsheet ss = new Spreadsheet(new StreamReader("../../SampleSavedSpreadsheet.xml"));
+            Assert.AreEqual((double) ss.GetCellValue("A3"), 35d, .0001); // value of this formula should be 35.
+            Assert.AreEqual(ss.GetCellValue("B2"), "Hello"); // b2 is "Hello".
         }
 
         [TestMethod]
         public void TestSave1()
         {
-            StreamReader sr = new StreamReader("SampleSavedSpreadsheet.xml");
+            // Read in file
+            StreamReader sr = new StreamReader("../../SampleSavedSpreadsheet.xml");
             Spreadsheet ss = new Spreadsheet(sr);
             sr.Close();
 
+            // Change b2 to 10 and save.
             ss.SetContentsOfCell("b2", "10");
-            StreamWriter sw = new StreamWriter("SampleSavedSpreadsheet.xml");
+            StreamWriter sw = new StreamWriter("../../SampleSavedSpreadsheet.xml");
             ss.Save(sw);
             sw.Close();
 
-            StreamReader sr1 = new StreamReader("SampleSavedSpreadsheet.xml");
+            // Load new file
+            StreamReader sr1 = new StreamReader("../../SampleSavedSpreadsheet.xml");
             Spreadsheet ss2 = new Spreadsheet(sr1);
             sr1.Close();
 
+            // b2 should be equal to 10.
             Assert.AreEqual((double) ss.GetCellValue("b2"), 10, .0001);
+            
+            // Change back to Hello and save
+            StreamWriter sw1 = new StreamWriter("../../SampleSavedSpreadsheet.xml");
             ss.SetContentsOfCell("b2", "Hello");
-
-            StreamWriter sw1 = new StreamWriter("SampleSavedSpreadsheet.xml");
             ss.Save(sw1);
             sw1.Close();
         }

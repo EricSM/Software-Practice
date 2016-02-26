@@ -7,6 +7,7 @@ using Formulas;
 using Dependencies;
 using System.Text.RegularExpressions;
 using System.IO;
+using System.Xml;
 
 namespace SS
 {
@@ -258,9 +259,68 @@ namespace SS
             return Regex.IsMatch(name, @"^([a-zA-Z]+)([1-9])(\d*)$") && _isValid.IsMatch(name);
         }
 
+        // ADDED FOR PS6
+        /// <summary>
+        /// Writes the contents of this spreadsheet to dest using an XML format.
+        /// The XML elements should be structured as follows:
+        ///
+        /// <spreadsheet IsValid="IsValid regex goes here">
+        ///   <cell name="cell name goes here" contents="cell contents go here"></cell>
+        ///   <cell name="cell name goes here" contents="cell contents go here"></cell>
+        ///   <cell name="cell name goes here" contents="cell contents go here"></cell>
+        /// </spreadsheet>
+        ///
+        /// The value of the isvalid attribute should be IsValid.ToString()
+        /// 
+        /// There should be one cell element for each non-empty cell in the spreadsheet.
+        /// If the cell contains a string, the string (without surrounding double quotes) should be written as the contents.
+        /// If the cell contains a double d, d.ToString() should be written as the contents.
+        /// If the cell contains a Formula f, f.ToString() with "=" prepended should be written as the contents.
+        ///
+        /// If there are any problems writing to dest, the method should throw an IOException.
+        /// </summary>
         public override void Save(TextWriter dest)
         {
-            throw new NotImplementedException();
+            try
+            {
+                using (XmlWriter writer = XmlWriter.Create(dest))
+                {
+                    writer.WriteStartDocument();
+                    writer.WriteStartElement("spreadsheet");
+                    writer.WriteAttributeString("IsValid", _isValid.ToString());
+
+                    foreach (string cell in GetNamesOfAllNonemptyCells())
+                    {
+                        writer.WriteStartElement("cell");
+                        writer.WriteAttributeString("name", cell);
+
+                        var content = GetCellContents(cell);
+                        if (content is string)
+                        {
+                            writer.WriteAttributeString("contents", content as string);
+                        }
+                        else if (content is double)
+                        {
+                            writer.WriteAttributeString("contents", ((double)content).ToString());
+                        }
+                        else if (content is Formula)
+                        {
+                            writer.WriteAttributeString("contents", "=" + content.ToString());
+                        }
+
+                        writer.WriteEndElement();
+                    }
+
+                    writer.WriteEndElement();
+                    writer.WriteEndDocument();
+                }
+
+                Changed = false;
+            }
+            catch (Exception e)
+            {
+                throw new IOException(e.Message);
+            }
         }
 
         // ADDED FOR PS6
@@ -332,18 +392,15 @@ namespace SS
             else if (double.TryParse(content, out result))
             {                
                 cellsToRecalculate = SetCellContents(normalizedName, result);
-                Changed = true;
             }
             else if (content.StartsWith("="))
             {
                 Formula formula = new Formula(content.Substring(1), s => s.ToUpper(), s => IsValid(s));
                 cellsToRecalculate = SetCellContents(normalizedName, formula);
-                Changed = true;
             }
             else
             {
-                cellsToRecalculate = SetCellContents(name, content);
-                Changed = true;
+                cellsToRecalculate = SetCellContents(name, content);                
             }
 
 
@@ -351,9 +408,11 @@ namespace SS
             {
                 try
                 {
-                    if (_cells[cell].Content is Formula)
+                    var formulaToRecalculate = GetCellContents(cell);
+
+                    if (formulaToRecalculate is Formula)
                     {
-                        _cells[cell].Value = ((Formula)_cells[cell].Content).Evaluate(s =>
+                        _cells[cell].Value = ((Formula)formulaToRecalculate).Evaluate(s =>
                         {
                             var value = GetCellValue(s);
                             if (value is FormulaError || value is string)
@@ -370,6 +429,7 @@ namespace SS
                 }
             }
 
+            Changed = true;
 
             return cellsToRecalculate;
         }

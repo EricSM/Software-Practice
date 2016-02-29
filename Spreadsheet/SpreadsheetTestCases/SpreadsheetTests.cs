@@ -144,30 +144,22 @@ namespace SpreadsheetTestCases
         [TestMethod]
         public void TestSave1()
         {
-            // Read in file
-            StreamReader sr = new StreamReader("../../SampleSavedSpreadsheet.xml");
-            Spreadsheet ss = new Spreadsheet(sr);
-            sr.Close();
+            // Create new spreadsheet
+            Spreadsheet ss = new Spreadsheet();
+            Assert.IsFalse(ss.Changed);
 
             // Change b2 to 10 and save.
             ss.SetContentsOfCell("b2", "10");
-            StreamWriter sw = new StreamWriter("../../SampleSavedSpreadsheet.xml");
+            Assert.IsTrue(ss.Changed);
+            StringWriter sw = new StringWriter();
             ss.Save(sw);
-            sw.Close();
 
             // Load new file
-            StreamReader sr1 = new StreamReader("../../SampleSavedSpreadsheet.xml");
-            Spreadsheet ss2 = new Spreadsheet(sr1);
-            sr1.Close();
+            Spreadsheet ss1 = new Spreadsheet(new StringReader(sw.ToString()));
+            Assert.IsFalse(ss1.Changed);
 
             // b2 should be equal to 10.
-            Assert.AreEqual((double) ss.GetCellValue("b2"), 10, .0001);
-            
-            // Change back to Hello and save
-            StreamWriter sw1 = new StreamWriter("../../SampleSavedSpreadsheet.xml");
-            ss.SetContentsOfCell("b2", "Hello");
-            ss.Save(sw1);
-            sw1.Close();
+            Assert.AreEqual((double) ss1.GetCellValue("b2"), 10, .0001);
         }
     }
 }

@@ -87,6 +87,7 @@ namespace SS
             settings.Schemas = sc;
             settings.ValidationEventHandler += ValidationCallback;
 
+            // Reading in the file.
             using (XmlReader reader = XmlReader.Create(source, settings))
             {
                 while (reader.Read())
@@ -131,6 +132,9 @@ namespace SS
                     }
                 }
             }
+
+            // File was not changed since it was just loaded.
+            Changed = false;
         }
 
         /// <summary>

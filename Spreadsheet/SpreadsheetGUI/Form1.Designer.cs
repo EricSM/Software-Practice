@@ -1,5 +1,8 @@
 ﻿namespace SpreadsheetGUI
 {
+    /// <summary>
+    /// 
+    /// </summary>
     partial class Form1
     {
         /// <summary>
@@ -29,23 +32,23 @@
         private void InitializeComponent()
         {
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
-            this.panel1 = new System.Windows.Forms.Panel();
-            this.spreadsheetPanel1 = new SSGui.SpreadsheetPanel();
-            this.panel2 = new System.Windows.Forms.Panel();
-            this.button1 = new System.Windows.Forms.Button();
-            this.textBox3 = new System.Windows.Forms.TextBox();
-            this.label3 = new System.Windows.Forms.Label();
-            this.textBox2 = new System.Windows.Forms.TextBox();
-            this.label2 = new System.Windows.Forms.Label();
-            this.textBox1 = new System.Windows.Forms.TextBox();
-            this.label1 = new System.Windows.Forms.Label();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.newToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.saveToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.centerPanel = new System.Windows.Forms.Panel();
+            this.spreadsheetPanel1 = new SSGui.SpreadsheetPanel();
+            this.controlPanel = new System.Windows.Forms.Panel();
+            this.updateButton = new System.Windows.Forms.Button();
+            this.formulaTextBox = new System.Windows.Forms.TextBox();
+            this.formulaLabel = new System.Windows.Forms.Label();
+            this.valueTextBox = new System.Windows.Forms.TextBox();
+            this.valueLabel = new System.Windows.Forms.Label();
+            this.nameTextBox = new System.Windows.Forms.TextBox();
+            this.cellLabel = new System.Windows.Forms.Label();
             this.menuStrip1.SuspendLayout();
-            this.panel1.SuspendLayout();
-            this.panel2.SuspendLayout();
+            this.centerPanel.SuspendLayout();
+            this.controlPanel.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -54,104 +57,9 @@
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(484, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(584, 24);
             this.menuStrip1.TabIndex = 0;
             this.menuStrip1.Text = "menuStrip1";
-            // 
-            // panel1
-            // 
-            this.panel1.Controls.Add(this.spreadsheetPanel1);
-            this.panel1.Controls.Add(this.panel2);
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.panel1.Location = new System.Drawing.Point(0, 24);
-            this.panel1.Name = "panel1";
-            this.panel1.Padding = new System.Windows.Forms.Padding(3);
-            this.panel1.Size = new System.Drawing.Size(484, 337);
-            this.panel1.TabIndex = 1;
-            // 
-            // spreadsheetPanel1
-            // 
-            this.spreadsheetPanel1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
-            this.spreadsheetPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.spreadsheetPanel1.Location = new System.Drawing.Point(3, 54);
-            this.spreadsheetPanel1.Name = "spreadsheetPanel1";
-            this.spreadsheetPanel1.Size = new System.Drawing.Size(478, 280);
-            this.spreadsheetPanel1.TabIndex = 1;
-            // 
-            // panel2
-            // 
-            this.panel2.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
-            this.panel2.Controls.Add(this.button1);
-            this.panel2.Controls.Add(this.textBox3);
-            this.panel2.Controls.Add(this.label3);
-            this.panel2.Controls.Add(this.textBox2);
-            this.panel2.Controls.Add(this.label2);
-            this.panel2.Controls.Add(this.textBox1);
-            this.panel2.Controls.Add(this.label1);
-            this.panel2.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel2.Location = new System.Drawing.Point(3, 3);
-            this.panel2.Name = "panel2";
-            this.panel2.Size = new System.Drawing.Size(478, 51);
-            this.panel2.TabIndex = 0;
-            // 
-            // button1
-            // 
-            this.button1.Location = new System.Drawing.Point(393, 13);
-            this.button1.Name = "button1";
-            this.button1.Size = new System.Drawing.Size(75, 23);
-            this.button1.TabIndex = 6;
-            this.button1.Text = "button1";
-            this.button1.UseVisualStyleBackColor = true;
-            // 
-            // textBox3
-            // 
-            this.textBox3.Location = new System.Drawing.Point(287, 15);
-            this.textBox3.Name = "textBox3";
-            this.textBox3.Size = new System.Drawing.Size(100, 20);
-            this.textBox3.TabIndex = 5;
-            // 
-            // label3
-            // 
-            this.label3.AutoSize = true;
-            this.label3.Location = new System.Drawing.Point(246, 18);
-            this.label3.Name = "label3";
-            this.label3.Size = new System.Drawing.Size(35, 13);
-            this.label3.TabIndex = 4;
-            this.label3.Text = "label3";
-            // 
-            // textBox2
-            // 
-            this.textBox2.Location = new System.Drawing.Point(150, 15);
-            this.textBox2.Name = "textBox2";
-            this.textBox2.ReadOnly = true;
-            this.textBox2.Size = new System.Drawing.Size(79, 20);
-            this.textBox2.TabIndex = 3;
-            // 
-            // label2
-            // 
-            this.label2.AutoSize = true;
-            this.label2.Location = new System.Drawing.Point(109, 18);
-            this.label2.Name = "label2";
-            this.label2.Size = new System.Drawing.Size(35, 13);
-            this.label2.TabIndex = 2;
-            this.label2.Text = "label2";
-            // 
-            // textBox1
-            // 
-            this.textBox1.Location = new System.Drawing.Point(46, 15);
-            this.textBox1.Name = "textBox1";
-            this.textBox1.ReadOnly = true;
-            this.textBox1.Size = new System.Drawing.Size(44, 20);
-            this.textBox1.TabIndex = 1;
-            // 
-            // label1
-            // 
-            this.label1.AutoSize = true;
-            this.label1.Location = new System.Drawing.Point(4, 18);
-            this.label1.Name = "label1";
-            this.label1.Size = new System.Drawing.Size(35, 13);
-            this.label1.TabIndex = 0;
-            this.label1.Text = "label1";
             // 
             // fileToolStripMenuItem
             // 
@@ -166,36 +74,133 @@
             // newToolStripMenuItem
             // 
             this.newToolStripMenuItem.Name = "newToolStripMenuItem";
-            this.newToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.newToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             this.newToolStripMenuItem.Text = "New";
             // 
             // openToolStripMenuItem
             // 
             this.openToolStripMenuItem.Name = "openToolStripMenuItem";
-            this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             this.openToolStripMenuItem.Text = "Open";
             // 
             // saveToolStripMenuItem
             // 
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
-            this.saveToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.saveToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             this.saveToolStripMenuItem.Text = "Save";
+            // 
+            // centerPanel
+            // 
+            this.centerPanel.Controls.Add(this.spreadsheetPanel1);
+            this.centerPanel.Controls.Add(this.controlPanel);
+            this.centerPanel.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.centerPanel.Location = new System.Drawing.Point(0, 24);
+            this.centerPanel.Name = "centerPanel";
+            this.centerPanel.Padding = new System.Windows.Forms.Padding(3);
+            this.centerPanel.Size = new System.Drawing.Size(584, 437);
+            this.centerPanel.TabIndex = 1;
+            // 
+            // spreadsheetPanel1
+            // 
+            this.spreadsheetPanel1.BorderStyle = System.Windows.Forms.BorderStyle.Fixed3D;
+            this.spreadsheetPanel1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.spreadsheetPanel1.Location = new System.Drawing.Point(3, 54);
+            this.spreadsheetPanel1.Name = "spreadsheetPanel1";
+            this.spreadsheetPanel1.Size = new System.Drawing.Size(578, 380);
+            this.spreadsheetPanel1.TabIndex = 1;
+            // 
+            // controlPanel
+            // 
+            this.controlPanel.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.controlPanel.Controls.Add(this.updateButton);
+            this.controlPanel.Controls.Add(this.formulaTextBox);
+            this.controlPanel.Controls.Add(this.formulaLabel);
+            this.controlPanel.Controls.Add(this.valueTextBox);
+            this.controlPanel.Controls.Add(this.valueLabel);
+            this.controlPanel.Controls.Add(this.nameTextBox);
+            this.controlPanel.Controls.Add(this.cellLabel);
+            this.controlPanel.Dock = System.Windows.Forms.DockStyle.Top;
+            this.controlPanel.Location = new System.Drawing.Point(3, 3);
+            this.controlPanel.Name = "controlPanel";
+            this.controlPanel.Size = new System.Drawing.Size(578, 51);
+            this.controlPanel.TabIndex = 0;
+            // 
+            // updateButton
+            // 
+            this.updateButton.Location = new System.Drawing.Point(399, 13);
+            this.updateButton.Name = "updateButton";
+            this.updateButton.Size = new System.Drawing.Size(75, 23);
+            this.updateButton.TabIndex = 6;
+            this.updateButton.Text = "Update";
+            this.updateButton.UseVisualStyleBackColor = true;
+            this.updateButton.Click += new System.EventHandler(this.button1_Click);
+            // 
+            // formulaTextBox
+            // 
+            this.formulaTextBox.Location = new System.Drawing.Point(293, 15);
+            this.formulaTextBox.Name = "formulaTextBox";
+            this.formulaTextBox.Size = new System.Drawing.Size(100, 20);
+            this.formulaTextBox.TabIndex = 5;
+            // 
+            // formulaLabel
+            // 
+            this.formulaLabel.AutoSize = true;
+            this.formulaLabel.Location = new System.Drawing.Point(246, 18);
+            this.formulaLabel.Name = "formulaLabel";
+            this.formulaLabel.Size = new System.Drawing.Size(50, 13);
+            this.formulaLabel.TabIndex = 4;
+            this.formulaLabel.Text = "Formula: ";
+            // 
+            // valueTextBox
+            // 
+            this.valueTextBox.Location = new System.Drawing.Point(150, 15);
+            this.valueTextBox.Name = "valueTextBox";
+            this.valueTextBox.ReadOnly = true;
+            this.valueTextBox.Size = new System.Drawing.Size(79, 20);
+            this.valueTextBox.TabIndex = 3;
+            // 
+            // valueLabel
+            // 
+            this.valueLabel.AutoSize = true;
+            this.valueLabel.Location = new System.Drawing.Point(109, 18);
+            this.valueLabel.Name = "valueLabel";
+            this.valueLabel.Size = new System.Drawing.Size(40, 13);
+            this.valueLabel.TabIndex = 2;
+            this.valueLabel.Text = "Value: ";
+            // 
+            // nameTextBox
+            // 
+            this.nameTextBox.Location = new System.Drawing.Point(46, 15);
+            this.nameTextBox.Name = "nameTextBox";
+            this.nameTextBox.ReadOnly = true;
+            this.nameTextBox.Size = new System.Drawing.Size(44, 20);
+            this.nameTextBox.TabIndex = 1;
+            this.nameTextBox.Text = "A1";
+            // 
+            // cellLabel
+            // 
+            this.cellLabel.AutoSize = true;
+            this.cellLabel.Location = new System.Drawing.Point(4, 18);
+            this.cellLabel.Name = "cellLabel";
+            this.cellLabel.Size = new System.Drawing.Size(30, 13);
+            this.cellLabel.TabIndex = 0;
+            this.cellLabel.Text = "Cell: ";
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(484, 361);
-            this.Controls.Add(this.panel1);
+            this.ClientSize = new System.Drawing.Size(584, 461);
+            this.Controls.Add(this.centerPanel);
             this.Controls.Add(this.menuStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.Name = "Form1";
             this.Text = "Form1";
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
-            this.panel1.ResumeLayout(false);
-            this.panel2.ResumeLayout(false);
-            this.panel2.PerformLayout();
+            this.centerPanel.ResumeLayout(false);
+            this.controlPanel.ResumeLayout(false);
+            this.controlPanel.PerformLayout();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -204,16 +209,16 @@
         #endregion
 
         private System.Windows.Forms.MenuStrip menuStrip1;
-        private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.Panel centerPanel;
         private SSGui.SpreadsheetPanel spreadsheetPanel1;
-        private System.Windows.Forms.Panel panel2;
-        private System.Windows.Forms.Button button1;
-        private System.Windows.Forms.TextBox textBox3;
-        private System.Windows.Forms.Label label3;
-        private System.Windows.Forms.TextBox textBox2;
-        private System.Windows.Forms.Label label2;
-        private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.Label label1;
+        private System.Windows.Forms.Panel controlPanel;
+        private System.Windows.Forms.Button updateButton;
+        private System.Windows.Forms.TextBox formulaTextBox;
+        private System.Windows.Forms.Label formulaLabel;
+        private System.Windows.Forms.TextBox valueTextBox;
+        private System.Windows.Forms.Label valueLabel;
+        private System.Windows.Forms.TextBox nameTextBox;
+        private System.Windows.Forms.Label cellLabel;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem newToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;

@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using SS;
 using SSGui;
 
 namespace SpreadsheetGUI
@@ -28,7 +29,15 @@ namespace SpreadsheetGUI
         /// </summary>
         public event Action<string> UpdateEvent;
 
-       
+        /// <summary>
+        /// 
+        /// </summary>
+        public event Action NewEvent;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public event Action<string> OpenEvent;
 
         private void button1_Click(object sender, EventArgs e)
         {
@@ -81,6 +90,24 @@ namespace SpreadsheetGUI
         /// <summary>
         /// 
         /// </summary>
+        public string Title {
+            set
+            {
+                Text = value;
+            }
+        }
+
+        /// <summary>
+        /// Shows the message in the UI.
+        /// </summary>
+        public string Message
+        {
+            set { MessageBox.Show(value); }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
         public SelectionChangedHandler SelectionChanged
         {
             get
@@ -104,6 +131,43 @@ namespace SpreadsheetGUI
         public void SetCell(int col, int row, string content)
         {
             spreadsheetPanel1.SetValue(col, row, content);
+        }
+
+        private void newToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (NewEvent != null)
+            {
+                NewEvent();
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        public void OpenNew()
+        {
+            SpreadsheetApplicationContext.GetContext().RunNew();
+        }
+
+        private void openToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            DialogResult result = openFileDialog.ShowDialog();
+            if (result == DialogResult.Yes || result == DialogResult.OK)
+            {
+                if (OpenEvent != null)
+                {
+                    OpenEvent(openFileDialog.FileName);
+                }
+            }
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="spreadsheet"></param>
+        public void OpenExisting(Spreadsheet spreadsheet)
+        {
+            SpreadsheetApplicationContext.GetContext().RunNew(spreadsheet);
         }
     }
 }

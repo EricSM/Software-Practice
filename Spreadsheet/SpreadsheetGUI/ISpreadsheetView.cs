@@ -1,4 +1,5 @@
-﻿using SSGui;
+﻿using SS;
+using SSGui;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -16,6 +17,16 @@ namespace SpreadsheetGUI
         /// 
         /// </summary>
         event Action<string> UpdateEvent;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        event Action NewEvent;
+
+        /// <summary>
+        /// 
+        /// </summary>
+        event Action<string> OpenEvent;
 
         /// <summary>
         /// 
@@ -40,9 +51,31 @@ namespace SpreadsheetGUI
         /// <summary>
         /// 
         /// </summary>
+        string Title { set; }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        string Message { set; }
+
+
+        /// <summary>
+        /// 
+        /// </summary>
         /// <param name="col"></param>
         /// <param name="row"></param>
         /// <param name="content"></param>
         void SetCell(int col, int row, string content);
+
+        /// <summary>
+        /// 
+        /// </summary>
+        void OpenNew();
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <param name="spreadsheet"></param>
+        void OpenExisting(Spreadsheet spreadsheet);
     }
 }

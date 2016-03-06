@@ -28,6 +28,8 @@ namespace SpreadsheetGUI
         /// </summary>
         event Action<string> OpenEvent;
 
+        event Action<string> SaveEvent;
+
         /// <summary>
         /// 
         /// </summary>
@@ -66,16 +68,5 @@ namespace SpreadsheetGUI
         /// <param name="row"></param>
         /// <param name="content"></param>
         void SetCell(int col, int row, string content);
-
-        /// <summary>
-        /// 
-        /// </summary>
-        void OpenNew();
-
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="spreadsheet"></param>
-        void OpenExisting(Spreadsheet spreadsheet);
     }
 }

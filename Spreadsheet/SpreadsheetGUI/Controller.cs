@@ -27,28 +27,48 @@ namespace SpreadsheetGUI
         public Controller(ISpreadsheetView window)
         {
             this.window = window;
-            this.spreadsheet = new Spreadsheet();
+            this.spreadsheet = new Spreadsheet(new Regex(@"[A-Z][1-9](\d?)"));
 
-            window.UpdateEvent += HandleUpdateSelection;
             window.SelectionChanged += HandleDisplaySelection;
+            window.UpdateEvent += HandleUpdateSelection;
             window.NewEvent += HandleNew;
             window.OpenEvent += HandleOpen;
+            window.SaveEvent += HandleSave;
         }
-
+        
         /// <summary>
         /// 
         /// </summary>
         /// <param name="window"></param>
         /// <param name="spreadsheet"></param>
-        public Controller(ISpreadsheetView window, Spreadsheet spreadsheet)
+        /// <param name="filename"></param>
+        public Controller(ISpreadsheetView window, Spreadsheet spreadsheet, string filename)
         {
             this.window = window;
             this.spreadsheet = spreadsheet;
+
+            window.Title = filename;
+
+
+            foreach (string cell in spreadsheet.GetNamesOfAllNonemptyCells())
+            {
+                string[] rowAndCol = Regex.Split(cell, @"(\d+)");
+
+
+
+                window.SetCell((rowAndCol[0].ToCharArray()[0] - 'A'), int.Parse(rowAndCol[1]) - 1, spreadsheet.GetCellValue(cell).ToString());
+            }
+            window.CellValue = spreadsheet.GetCellValue(window.CellName).ToString();
+            window.CellContent = (spreadsheet.GetCellContents(window.CellName) is Formula ? "=" : "") +
+                spreadsheet.GetCellContents(window.CellName).ToString();
+
+
 
             window.UpdateEvent += HandleUpdateSelection;
             window.SelectionChanged += HandleDisplaySelection;
             window.NewEvent += HandleNew;
             window.OpenEvent += HandleOpen;
+            window.SaveEvent += HandleSave;
         }
 
         /// <summary>
@@ -89,33 +109,34 @@ namespace SpreadsheetGUI
         /// </summary>
         private void HandleNew()
         {
-            window.OpenNew();
+            SpreadsheetApplicationContext.GetContext().RunNew();
         }
 
         private void HandleOpen(string filename)
         {
             try
             {
-                window.OpenExisting(spreadsheet = new Spreadsheet(new StreamReader(filename)));
-
-                foreach(string cell in spreadsheet.GetNamesOfAllNonemptyCells())
-                {
-                    string[] rowAndCol = Regex.Split(cell, @"(\d+)");
-
-
-
-                    window.SetCell((rowAndCol[0].ToCharArray()[0] - 'A'), int.Parse(rowAndCol[1]) - 1, spreadsheet.GetCellValue(cell).ToString());
-                }
-                window.CellValue = spreadsheet.GetCellValue(window.CellName).ToString();
-                window.CellContent = (spreadsheet.GetCellContents(window.CellName) is Formula ? "=" : "") +
-                    spreadsheet.GetCellContents(window.CellName).ToString();
-
-
-                window.Title = filename;
+                var newSpreadsheet = new Spreadsheet(new StreamReader(filename));
+                                
+                SpreadsheetApplicationContext.GetContext().RunNew(newSpreadsheet, filename);
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                window.Message = "Unable to open file\n" + ex.Message;
+                window.Message = "Unable to open file\n" + e.Message;
+            }
+        }
+
+        private void HandleSave(string filename)
+        {
+            try
+            {
+                StringWriter sw = new StringWriter();
+                spreadsheet.Save(sw);
+                File.WriteAllText(filename, sw.ToString());
+            }
+            catch (Exception e)
+            {
+                window.Message = "Unable to save file\n" + e.Message;
             }
         }
     }

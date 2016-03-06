@@ -39,6 +39,9 @@ namespace SpreadsheetGUI
         /// </summary>
         public event Action<string> OpenEvent;
 
+
+        public event Action<string> SaveEvent;
+
         private void button1_Click(object sender, EventArgs e)
         {
             if (UpdateEvent != null)
@@ -46,8 +49,6 @@ namespace SpreadsheetGUI
                 UpdateEvent(formulaTextBox.Text);
             }
         }
-
-        //public Action<SpreadsheetPanel> SSPanel { set { spreadsheetPanel1.SelectionChanged += value; } }
 
         /// <summary>
         /// 
@@ -141,14 +142,6 @@ namespace SpreadsheetGUI
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        public void OpenNew()
-        {
-            SpreadsheetApplicationContext.GetContext().RunNew();
-        }
-
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
             DialogResult result = openFileDialog.ShowDialog();
@@ -161,13 +154,17 @@ namespace SpreadsheetGUI
             }
         }
 
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <param name="spreadsheet"></param>
-        public void OpenExisting(Spreadsheet spreadsheet)
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            SpreadsheetApplicationContext.GetContext().RunNew(spreadsheet);
+            saveFileDialog.ShowDialog();
+        }
+
+        private void saveFileDialog_FileOk(object sender, CancelEventArgs e)
+        {
+            if (SaveEvent != null)
+            {
+                SaveEvent(saveFileDialog.FileName);
+            }
         }
     }
 }

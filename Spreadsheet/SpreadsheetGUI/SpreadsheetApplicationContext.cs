@@ -57,11 +57,11 @@ namespace SpreadsheetGUI
         /// <summary>
         /// Runs a form in this application context
         /// </summary>
-        public void RunNew(Spreadsheet spreadsheet)
+        public void RunNew(Spreadsheet spreadsheet, string filename)
         {
             // Create the window and the controller
             Form1 window = new Form1();
-            new Controller(window, spreadsheet);
+            new Controller(window, spreadsheet, filename);
 
             // One more form is running
             windowCount++;

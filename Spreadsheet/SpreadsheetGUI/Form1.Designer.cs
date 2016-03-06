@@ -47,6 +47,7 @@
             this.nameTextBox = new System.Windows.Forms.TextBox();
             this.cellLabel = new System.Windows.Forms.Label();
             this.openFileDialog = new System.Windows.Forms.OpenFileDialog();
+            this.saveFileDialog = new System.Windows.Forms.SaveFileDialog();
             this.menuStrip1.SuspendLayout();
             this.centerPanel.SuspendLayout();
             this.controlPanel.SuspendLayout();
@@ -91,6 +92,7 @@
             this.saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             this.saveToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             this.saveToolStripMenuItem.Text = "Save";
+            this.saveToolStripMenuItem.Click += new System.EventHandler(this.saveToolStripMenuItem_Click);
             // 
             // centerPanel
             // 
@@ -194,6 +196,12 @@
             this.openFileDialog.FileName = "openFileDialog1";
             this.openFileDialog.Filter = "Spreadsheet files (*.ss) | *.ss";
             // 
+            // saveFileDialog
+            // 
+            this.saveFileDialog.DefaultExt = "ss";
+            this.saveFileDialog.FileName = "spreadsheet";
+            this.saveFileDialog.FileOk += new System.ComponentModel.CancelEventHandler(this.saveFileDialog_FileOk);
+            // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -232,6 +240,7 @@
         private System.Windows.Forms.ToolStripMenuItem openToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.OpenFileDialog openFileDialog;
+        private System.Windows.Forms.SaveFileDialog saveFileDialog;
     }
 }
 

@@ -29,11 +29,7 @@ namespace SpreadsheetGUI
             this.window = window;
             this.spreadsheet = new Spreadsheet(new Regex(@"[A-Z][1-9](\d?)"));
 
-            window.SelectionChanged += HandleDisplaySelection;
-            window.UpdateEvent += HandleUpdateSelection;
-            window.NewEvent += HandleNew;
-            window.OpenEvent += HandleOpen;
-            window.SaveEvent += HandleSave;
+            AddEvents();
         }
         
         /// <summary>
@@ -63,12 +59,8 @@ namespace SpreadsheetGUI
                 spreadsheet.GetCellContents(window.CellName).ToString();
 
 
-
-            window.UpdateEvent += HandleUpdateSelection;
-            window.SelectionChanged += HandleDisplaySelection;
-            window.NewEvent += HandleNew;
-            window.OpenEvent += HandleOpen;
-            window.SaveEvent += HandleSave;
+            AddEvents();
+           
         }
 
         /// <summary>
@@ -89,19 +81,25 @@ namespace SpreadsheetGUI
 
         private void HandleUpdateSelection(string content)
         {
+            var initialContent = spreadsheet.GetCellContents(window.CellName);
 
-            foreach (string cell in spreadsheet.SetContentsOfCell(window.CellName, content))
-            {
-                string[] rowAndCol = Regex.Split(cell, @"(\d+)");
+            try {
+                foreach (string cell in spreadsheet.SetContentsOfCell(window.CellName, content))
+                {
+                    string[] rowAndCol = Regex.Split(cell, @"(\d+)");
 
+                    window.SetCell((rowAndCol[0].ToCharArray()[0] - 'A'), int.Parse(rowAndCol[1]) - 1, spreadsheet.GetCellValue(cell).ToString());
+                }
 
-                
-                window.SetCell((rowAndCol[0].ToCharArray()[0] - 'A'), int.Parse(rowAndCol[1]) - 1, spreadsheet.GetCellValue(cell).ToString());
+                window.CellValue = spreadsheet.GetCellValue(window.CellName).ToString();
+                window.CellContent = (spreadsheet.GetCellContents(window.CellName) is Formula ? "=" : "") +
+                    spreadsheet.GetCellContents(window.CellName).ToString();
             }
-
-            window.CellValue = spreadsheet.GetCellValue(window.CellName).ToString();
-            window.CellContent = (spreadsheet.GetCellContents(window.CellName) is Formula ? "=" : "") + 
-                spreadsheet.GetCellContents(window.CellName).ToString();
+            catch (Exception e)
+            {
+                window.Message = "Error: \n" + e.Message;
+                HandleUpdateSelection(initialContent.ToString());
+            }                       
         }
 
         /// <summary>
@@ -130,14 +128,34 @@ namespace SpreadsheetGUI
         {
             try
             {
-                StringWriter sw = new StringWriter();
-                spreadsheet.Save(sw);
-                File.WriteAllText(filename, sw.ToString());
+                spreadsheet.Save(new StreamWriter(filename));
             }
             catch (Exception e)
             {
                 window.Message = "Unable to save file\n" + e.Message;
             }
+        }
+
+        private void HandleClose()
+        {
+            if(spreadsheet.Changed)
+            {
+                window.ShowSaveMessage();
+            }
+            else
+            {
+                window.DoClose();
+            }
+        }
+
+        private void AddEvents()
+        {
+            window.UpdateEvent += HandleUpdateSelection;
+            window.SelectionChanged += HandleDisplaySelection;
+            window.NewEvent += HandleNew;
+            window.OpenEvent += HandleOpen;
+            window.SaveEvent += HandleSave;
+            window.CloseEvent += HandleClose;
         }
     }
 }

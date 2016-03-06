@@ -41,7 +41,7 @@ namespace SpreadsheetGUI
         public void RunNew()
         {
             // Create the window and the controller
-            Form1 window = new Form1();
+            SpreadsheetWindow window = new SpreadsheetWindow();
             new Controller(window);
 
             // One more form is running
@@ -60,7 +60,7 @@ namespace SpreadsheetGUI
         public void RunNew(Spreadsheet spreadsheet, string filename)
         {
             // Create the window and the controller
-            Form1 window = new Form1();
+            SpreadsheetWindow window = new SpreadsheetWindow();
             new Controller(window, spreadsheet, filename);
 
             // One more form is running

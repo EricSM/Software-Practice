@@ -12,14 +12,14 @@ using SSGui;
 
 namespace SpreadsheetGUI
 {
-    public partial class Form1 : Form, ISpreadsheetView
+    public partial class SpreadsheetWindow : Form, ISpreadsheetView
     {
         private SelectionChangedHandler _selectionChanged;
 
         /// <summary>
         /// 
         /// </summary>
-        public Form1()
+        public SpreadsheetWindow()
         {
             InitializeComponent();
         }
@@ -42,13 +42,8 @@ namespace SpreadsheetGUI
 
         public event Action<string> SaveEvent;
 
-        private void button1_Click(object sender, EventArgs e)
-        {
-            if (UpdateEvent != null)
-            {
-                UpdateEvent(formulaTextBox.Text);
-            }
-        }
+        public event Action CloseEvent;
+
 
         /// <summary>
         /// 
@@ -134,6 +129,46 @@ namespace SpreadsheetGUI
             spreadsheetPanel1.SetValue(col, row, content);
         }
 
+
+        /// <summary>
+        /// Closes this window
+        /// </summary>
+        public void DoClose()
+        {
+            Close();
+        }
+
+        public void ShowSaveMessage()
+        {
+            DialogResult result = MessageBox.Show("Unsaved changes.\nDo you wish to save your spreadsheet?",
+                    "Unsaved Spreadsheet",
+                    MessageBoxButtons.YesNoCancel,
+                    MessageBoxIcon.Warning,
+                    MessageBoxDefaultButton.Button2);
+
+            if (result == DialogResult.Yes)
+            {
+                saveFileDialog.ShowDialog();
+                DoClose();
+            }
+            else if (result == DialogResult.No)
+            {
+                DoClose();
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            if (UpdateEvent != null)
+            {
+                UpdateEvent(formulaTextBox.Text);
+                if (Text.Last() != '*')
+                {
+                    Text += "*";
+                }
+            }
+        }
+
         private void newToolStripMenuItem_Click(object sender, EventArgs e)
         {
             if (NewEvent != null)
@@ -164,6 +199,18 @@ namespace SpreadsheetGUI
             if (SaveEvent != null)
             {
                 SaveEvent(saveFileDialog.FileName);
+            }
+            if (Text.Last() == '*')
+            {
+                Text = Text.Remove(Text.Length - 1);
+            }
+        }
+
+        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (CloseEvent != null)
+            {
+                CloseEvent();
             }
         }
     }

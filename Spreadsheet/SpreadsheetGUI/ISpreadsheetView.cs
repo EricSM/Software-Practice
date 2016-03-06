@@ -30,6 +30,8 @@ namespace SpreadsheetGUI
 
         event Action<string> SaveEvent;
 
+        event Action CloseEvent;
+
         /// <summary>
         /// 
         /// </summary>
@@ -68,5 +70,9 @@ namespace SpreadsheetGUI
         /// <param name="row"></param>
         /// <param name="content"></param>
         void SetCell(int col, int row, string content);
+
+        void DoClose();
+
+        void ShowSaveMessage();
     }
 }

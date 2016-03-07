@@ -44,6 +44,8 @@ namespace SpreadsheetGUI
 
         public event Action CloseEvent;
 
+        public event Action HelpEvent;
+
 
         /// <summary>
         /// 
@@ -200,10 +202,6 @@ namespace SpreadsheetGUI
             {
                 SaveEvent(saveFileDialog.FileName);
             }
-            if (Text.Last() == '*')
-            {
-                Text = Text.Remove(Text.Length - 1);
-            }
 
             Text = saveFileDialog.FileName;
         }
@@ -213,6 +211,14 @@ namespace SpreadsheetGUI
             if (CloseEvent != null)
             {
                 CloseEvent();
+            }
+        }
+
+        private void viewHelpToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            if (HelpEvent != null)
+            {
+                HelpEvent();
             }
         }
     }

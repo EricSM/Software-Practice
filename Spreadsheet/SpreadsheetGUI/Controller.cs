@@ -148,6 +148,31 @@ namespace SpreadsheetGUI
             }
         }
 
+        private void HandleHelp()
+        {
+            window.Message = "Turorial:\n\n"
+                + "Update Cells:\n"
+                + "To update the value of a cell, click on it and put in the desired value into the formula textbox, then "
+                + "push the button marked \"Update\".  Note: an asterix (*) will appear next to the file name in the window " 
+                + "header if ther are any unsaved changes.  You can put text or numbers into the cell.  To put in a formula " 
+                + "that uses other cells, type an equals sign (=) into the formula textbox and then type in your formula.  " 
+                + "Then tap \"Update\".  Any dependent cells in the spreadsheet will be automatically updated.  The value " 
+                + "of your selected cell will be displayed in the textbox labeled \"Value\".  \n\n"
+                
+                + "New Window:\n"
+                + "To open a new window click \"New\" in the help menu.  \n\n" 
+                
+                + "Open Spreadsheet:\n"
+                + "To open an ss file, click \"Open\" in the file menu and choose your file.  \n\n" 
+                
+                + "Save Spreadsheet:\n"
+                + "To save a spreadsheet, click \"Save\" then give your file a name, then click ok.  You may overwrite existing " 
+                + "files if you wish.  \n\n" 
+                
+                + "Close Spreadsheet:\n"
+                + "To properly close this program, click \"Close\" in the file menu.";
+        }
+
         private void AddEvents()
         {
             window.UpdateEvent += HandleUpdateSelection;
@@ -156,6 +181,7 @@ namespace SpreadsheetGUI
             window.OpenEvent += HandleOpen;
             window.SaveEvent += HandleSave;
             window.CloseEvent += HandleClose;
+            window.HelpEvent += HandleHelp;
         }
     }
 }

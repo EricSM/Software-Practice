@@ -32,6 +32,8 @@ namespace SpreadsheetGUI
 
         event Action CloseEvent;
 
+        event Action HelpEvent;
+
         /// <summary>
         /// 
         /// </summary>

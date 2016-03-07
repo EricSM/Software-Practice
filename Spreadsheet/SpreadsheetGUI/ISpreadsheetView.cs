@@ -64,6 +64,8 @@ namespace SpreadsheetGUI
         /// </summary>
         string Message { set; }
 
+        bool Changed { set; }
+
 
         /// <summary>
         /// 

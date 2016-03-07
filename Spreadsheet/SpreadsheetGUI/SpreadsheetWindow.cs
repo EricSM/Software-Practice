@@ -103,6 +103,25 @@ namespace SpreadsheetGUI
             set { MessageBox.Show(value); }
         }
 
+
+        public bool Changed
+        {
+            set
+            {
+                if (value)
+                {
+                    if (Text.Last() != '*')
+                    {
+                        Text += "*";
+                    }
+                }
+                else
+                {
+                    Text = saveFileDialog.FileName;
+                }
+            }
+        }
+
         /// <summary>
         /// 
         /// </summary>
@@ -202,8 +221,6 @@ namespace SpreadsheetGUI
             {
                 SaveEvent(saveFileDialog.FileName);
             }
-
-            Text = saveFileDialog.FileName;
         }
 
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)

@@ -94,6 +94,8 @@ namespace SpreadsheetGUI
                 window.CellValue = spreadsheet.GetCellValue(window.CellName).ToString();
                 window.CellContent = (spreadsheet.GetCellContents(window.CellName) is Formula ? "=" : "") +
                     spreadsheet.GetCellContents(window.CellName).ToString();
+
+                window.Changed = spreadsheet.Changed;
             }
             catch (Exception e)
             {
@@ -129,6 +131,7 @@ namespace SpreadsheetGUI
             try
             {
                 spreadsheet.Save(new StreamWriter(filename));
+                window.Changed = spreadsheet.Changed;
             }
             catch (Exception e)
             {

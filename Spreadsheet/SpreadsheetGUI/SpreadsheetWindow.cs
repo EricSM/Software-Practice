@@ -204,6 +204,8 @@ namespace SpreadsheetGUI
             {
                 Text = Text.Remove(Text.Length - 1);
             }
+
+            Text = saveFileDialog.FileName;
         }
 
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)

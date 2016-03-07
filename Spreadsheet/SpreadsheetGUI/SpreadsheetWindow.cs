@@ -120,6 +120,11 @@ namespace SpreadsheetGUI
                     Text = saveFileDialog.FileName;
                 }
             }
+
+            get
+            {
+                return Text.Last() == '*';
+            }
         }
 
         /// <summary>
@@ -157,25 +162,6 @@ namespace SpreadsheetGUI
         public void DoClose()
         {
             Close();
-        }
-
-        public void ShowSaveMessage()
-        {
-            DialogResult result = MessageBox.Show("Unsaved changes.\nDo you wish to save your spreadsheet?",
-                    "Unsaved Spreadsheet",
-                    MessageBoxButtons.YesNoCancel,
-                    MessageBoxIcon.Warning,
-                    MessageBoxDefaultButton.Button2);
-
-            if (result == DialogResult.Yes)
-            {
-                saveFileDialog.ShowDialog();
-                DoClose();
-            }
-            else if (result == DialogResult.No)
-            {
-                DoClose();
-            }
         }
 
         private void button1_Click(object sender, EventArgs e)
@@ -236,6 +222,27 @@ namespace SpreadsheetGUI
             if (HelpEvent != null)
             {
                 HelpEvent();
+            }
+        }
+
+        private void SpreadsheetWindow_FormClosing(object sender, CancelEventArgs e)
+        {
+            if (Changed)
+            {
+                DialogResult result = MessageBox.Show("Unsaved changes.\nDo you wish to save your spreadsheet?",
+                        "Unsaved Spreadsheet",
+                        MessageBoxButtons.YesNoCancel,
+                        MessageBoxIcon.Warning,
+                        MessageBoxDefaultButton.Button2);
+
+                if (result == DialogResult.Yes)
+                {
+                    saveFileDialog.ShowDialog();
+                }
+                else if (result == DialogResult.Cancel)
+                {
+                    e.Cancel = true;
+                }
             }
         }
     }

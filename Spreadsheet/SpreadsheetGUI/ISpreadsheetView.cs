@@ -64,7 +64,7 @@ namespace SpreadsheetGUI
         /// </summary>
         string Message { set; }
 
-        bool Changed { set; }
+        bool Changed { set; get; }
 
 
         /// <summary>
@@ -76,7 +76,5 @@ namespace SpreadsheetGUI
         void SetCell(int col, int row, string content);
 
         void DoClose();
-
-        void ShowSaveMessage();
     }
 }

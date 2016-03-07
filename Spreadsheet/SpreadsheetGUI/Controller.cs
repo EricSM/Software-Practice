@@ -141,14 +141,7 @@ namespace SpreadsheetGUI
 
         private void HandleClose()
         {
-            if(spreadsheet.Changed)
-            {
-                window.ShowSaveMessage();
-            }
-            else
-            {
-                window.DoClose();
-            }
+            window.DoClose();
         }
 
         private void HandleHelp()
@@ -173,7 +166,8 @@ namespace SpreadsheetGUI
                 + "files if you wish.  \n\n" 
                 
                 + "Close Spreadsheet:\n"
-                + "To properly close this program, click \"Close\" in the file menu.";
+                + "To close the spreadsheet, click \"Close\" in the file menu or click on the exit button on the window. If there "
+                + "are any unsaved changes, the spreadsheet will prompt you to either save, not save, or cancel close operation.";
         }
 
         private void AddEvents()

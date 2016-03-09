@@ -1,4 +1,7 @@
-﻿using SpreadsheetGUI;
+﻿// Name: Eric Miramontes
+// Uid: u0801584
+
+using SpreadsheetGUI;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,17 +13,19 @@ namespace ControllerTester
 {
     class SpreadsheetViewStub : ISpreadsheetView
     {
+        // These three properties record whether a method has been called
         public bool CalledDoClose { get; private set; }
 
         public bool CalledSetCell { get; private set; }
 
         public bool CalledNewEvent { get; private set; }
 
+        // These two properties record the selected row and column
         public int Row { get; private set; }
 
         public int Col { get; private set; }
                
-        
+        // These seven methods cause events to be fired
         public void FireCloseEvent()
         {
             if (CloseEvent != null)
@@ -74,6 +79,8 @@ namespace ControllerTester
             SelectionChanged(new SpreadsheetPanel());
         }
 
+
+        // These seven properties implement the interface
         public string CellContent{ get; set; }
 
         public string CellName { get; set; }
@@ -88,6 +95,8 @@ namespace ControllerTester
 
         public string Title { get; set; }
 
+
+        // These six events implement the interface
         public event Action CloseEvent;
         public event Action HelpEvent;
         public event Action NewEvent;
@@ -95,6 +104,8 @@ namespace ControllerTester
         public event Action<string> SaveEvent;
         public event Action<string> UpdateEvent;
 
+
+        // These two methods implement the interface
         public void DoClose()
         {
             CalledDoClose = true;

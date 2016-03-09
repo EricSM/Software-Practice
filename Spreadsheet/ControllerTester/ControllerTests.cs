@@ -1,4 +1,7 @@
-﻿using System;
+﻿// Name: Eric Miramontes
+// Uid: u0801584
+
+using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using SpreadsheetGUI;
 using SS;
@@ -8,6 +11,9 @@ namespace ControllerTester
     [TestClass]
     public class ControllerTests
     {
+        /// <summary>
+        /// Tests the constructor of Controller that takes in an existing spreadsheet.
+        /// </summary>
         [TestMethod]
         public void TestConstructor()
         {
@@ -71,6 +77,9 @@ namespace ControllerTester
             Assert.IsTrue(stub.CalledNewEvent);
         }
 
+
+        // Tests for when user opens a new spreadsheet.
+
         [TestMethod]
         public void TestOpen1()
         {
@@ -90,6 +99,9 @@ namespace ControllerTester
             stub.FireOpenEvent("spreadsheet1.ss");
             Assert.AreEqual(stub.Message, null);
         }
+
+
+        // Tests for when the user saves their spreadsheet.
 
         [TestMethod]
         public void TestSave1()
@@ -113,6 +125,8 @@ namespace ControllerTester
             Assert.AreEqual(stub.Title, "spreadsheet2.ss");
         }
 
+
+        // Tests for when a user updates their selected cell.
 
         [TestMethod]
         public void TestUpdate1()
@@ -144,6 +158,9 @@ namespace ControllerTester
             Assert.AreEqual(stub.CellContent, "10");
         }
 
+        /// <summary>
+        /// Test for method that updates a cell.
+        /// </summary>
         [TestMethod]
         public void TestSetCell()
         {
@@ -158,6 +175,10 @@ namespace ControllerTester
             Assert.AreEqual(stub.CellContent, "10");
         }
 
+        /// <summary>
+        /// Test for when a user selects a new cell.  Handler takes in a SpreadsheetPanel.
+        /// Default selected cell should be "A1".
+        /// </summary>
         [TestMethod]
         public void TestSelectionChanged()
         {

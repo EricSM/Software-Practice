@@ -1,4 +1,7 @@
-﻿using Formulas;
+﻿// Name: Eric Miramontes
+// Uid: u0801584
+
+using Formulas;
 using SS;
 using SSGui;
 using System;
@@ -24,20 +27,21 @@ namespace SpreadsheetGUI
         /// <summary>
         /// Begins controlling window.
         /// </summary>
+        /// <param name="window">The window being controlled</param>
         public Controller(ISpreadsheetView window)
         {
             this.window = window;
             this.spreadsheet = new Spreadsheet(new Regex(@"[A-Z][1-9](\d?)"));
 
-            AddEvents();
+            AddHandlers();
         }
         
         /// <summary>
-        /// 
+        /// Begins controlling window with a loaded spreadsheet.
         /// </summary>
-        /// <param name="window"></param>
-        /// <param name="spreadsheet"></param>
-        /// <param name="filename"></param>
+        /// <param name="window">The window being controlled</param>
+        /// <param name="spreadsheet">The spreadsheet being loaded to the window</param>
+        /// <param name="filename">The filename of the spreadsheet</param>
         public Controller(ISpreadsheetView window, Spreadsheet spreadsheet, string filename)
         {
             this.window = window;
@@ -46,59 +50,68 @@ namespace SpreadsheetGUI
             window.Title = filename;
 
 
-            foreach (string cell in spreadsheet.GetNamesOfAllNonemptyCells())
+            foreach (string cell in spreadsheet.GetNamesOfAllNonemptyCells()) // Populate the cells in the window.
             {
                 string[] rowAndCol = Regex.Split(cell, @"(\d+)");
                 
                 window.SetCell((rowAndCol[0].ToCharArray()[0] - 'A'), int.Parse(rowAndCol[1]) - 1, spreadsheet.GetCellValue(cell).ToString());
             }
+
+            // Display information about the default selected cell (usually "A1").
             window.CellValue = spreadsheet.GetCellValue(window.CellName).ToString();
             window.CellContent = (spreadsheet.GetCellContents(window.CellName) is Formula ? "=" : "") +
                 spreadsheet.GetCellContents(window.CellName).ToString();
 
 
-            AddEvents();
+            AddHandlers();
            
         }
 
         /// <summary>
-        /// 
+        /// Handles a request to select and display information about a certain cell.
         /// </summary>
-        /// <param name="ss"></param>
+        /// <param name="ss">Spreadsheet panel where new cell has been selected</param>
         private void HandleDisplaySelection(SpreadsheetPanel ss)
         {
             int row, col;
             String value;
-            ss.GetSelection(out col, out row);
-            ss.GetValue(col, row, out value);
-            window.CellName = ((char)('A' + col)).ToString() + (row + 1);
-            window.CellValue = value;
+            ss.GetSelection(out col, out row); // Retrieve row and col.
+            ss.GetValue(col, row, out value); // Retrieve value displayed in selected cell
+            window.CellName = ((char)('A' + col)).ToString() + (row + 1); // Display name of cell
+            window.CellValue = value; // Display value of cell
             window.CellContent = (spreadsheet.GetCellContents(window.CellName) is Formula ? "=" : "") +
-                spreadsheet.GetCellContents(window.CellName).ToString();
+                spreadsheet.GetCellContents(window.CellName).ToString(); // Display cell content (add an '=' if it is a formula)
         }
 
+        /// <summary>
+        /// Handles a request to update a cell.
+        /// </summary>
+        /// <param name="content"></param>
         private void HandleUpdateSelection(string content)
         {
-            var initialContent = spreadsheet.GetCellContents(window.CellName);
+            var initialContent = spreadsheet.GetCellContents(window.CellName); // Save original content of cell
 
+            // Try to set content of cell
             try {
-                foreach (string cell in spreadsheet.SetContentsOfCell(window.CellName, content))
+                foreach (string cell in spreadsheet.SetContentsOfCell(window.CellName, content)) // Iterate through all cells that may need to be updated
                 {
-                    string[] rowAndCol = Regex.Split(cell, @"(\d+)");
+                    string[] rowAndCol = Regex.Split(cell, @"(\d+)"); // Retrieve name of column and row number.
 
+                    // Display new value of updated cell
                     window.SetCell((rowAndCol[0].ToCharArray()[0] - 'A'), int.Parse(rowAndCol[1]) - 1, spreadsheet.GetCellValue(cell).ToString());
                 }
 
+                // Display new info about selected cell
                 window.CellValue = spreadsheet.GetCellValue(window.CellName).ToString();
                 window.CellContent = (spreadsheet.GetCellContents(window.CellName) is Formula ? "=" : "") +
                     spreadsheet.GetCellContents(window.CellName).ToString();
 
-                window.Changed = spreadsheet.Changed;
+                window.Changed = spreadsheet.Changed; // File has been changed
             }
-            catch (Exception e)
+            catch (Exception e) // If attempt to change cell results in an invalid formula or circular dependency
             {
-                window.Message = "Error: \n" + e.Message;
-                HandleUpdateSelection(initialContent.ToString());
+                window.Message = "Error: \n" + e.Message; // Display error message
+                HandleUpdateSelection(initialContent.ToString()); // Change cells back to what they were previously.
             }                       
         }
 
@@ -110,6 +123,10 @@ namespace SpreadsheetGUI
             SpreadsheetApplicationContext.GetContext().RunNew();
         }
 
+        /// <summary>
+        /// Handles a request to load an existing spreadsheet to a new window.
+        /// </summary>
+        /// <param name="filename">Name of existing spreadsheet file</param>
         private void HandleOpen(string filename)
         {
             try
@@ -124,6 +141,10 @@ namespace SpreadsheetGUI
             }
         }
 
+        /// <summary>
+        /// Handles request to save a spreadsheet to a file.
+        /// </summary>
+        /// <param name="filename"></param>
         private void HandleSave(string filename)
         {
             try
@@ -137,11 +158,17 @@ namespace SpreadsheetGUI
             }
         }
 
+        /// <summary>
+        /// Handles request to close the spreadsheet.
+        /// </summary>
         private void HandleClose()
         {
             window.DoClose();
         }
 
+        /// <summary>
+        /// Handles request to display help to the user.
+        /// </summary>
         private void HandleHelp()
         {
             window.Message = "Turorial:\n\n"
@@ -168,7 +195,10 @@ namespace SpreadsheetGUI
                 + "are any unsaved changes, the spreadsheet will prompt you to either save, not save, or cancel close operation.";
         }
 
-        private void AddEvents()
+        /// <summary>
+        /// Adds handlers to window's events.
+        /// </summary>
+        private void AddHandlers()
         {
             window.UpdateEvent += HandleUpdateSelection;
             window.SelectionChanged += HandleDisplaySelection;

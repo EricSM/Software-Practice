@@ -14,7 +14,65 @@ namespace ControllerTester
 
         public bool CalledSetCell { get; private set; }
 
+        public bool CalledNewEvent { get; private set; }
 
+        public int Row { get; private set; }
+
+        public int Col { get; private set; }
+               
+        
+        public void FireCloseEvent()
+        {
+            if (CloseEvent != null)
+            {
+                CloseEvent();
+            }
+        }
+        public void FireHelpEvent()
+        {
+            if (HelpEvent != null)
+            {
+                HelpEvent();
+            }
+        }
+
+        public void FireNewEvent()
+        {
+            if (NewEvent != null)
+            {
+                CalledNewEvent = true;
+            }
+        }
+
+        public void FireOpenEvent(string filename)
+        {
+            if (OpenEvent != null)
+            {
+                OpenEvent(filename);
+            }
+        }
+
+        public void FireSaveEvent(string filename)
+        {
+            if (SaveEvent != null)
+            {
+                SaveEvent(filename);
+                Title = filename;
+            }
+        }
+
+        public void FireUpdateEvent(string content)
+        {
+            if (UpdateEvent != null)
+            {
+                UpdateEvent(content);
+            }
+        }
+
+        public void FireSelectionChangedEvent()
+        {
+            SelectionChanged(new SpreadsheetPanel());
+        }
 
         public string CellContent{ get; set; }
 
@@ -46,6 +104,9 @@ namespace ControllerTester
         {
             CellContent = content;
             CalledSetCell = true;
+            Col = col;
+            Row = row;
+            CellName = (char)(col + 'A') + (row + 1).ToString();
         }
     }
 }

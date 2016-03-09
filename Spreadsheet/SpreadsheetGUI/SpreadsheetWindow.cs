@@ -161,7 +161,7 @@ namespace SpreadsheetGUI
         }
 
         /// <summary>
-        /// Set value to the content of a particular cell in the SpreadsheetPanel.
+        /// Set content displayed in a particular cell in the SpreadsheetPanel.
         /// </summary>
         /// <param name="col"></param>
         /// <param name="row"></param>

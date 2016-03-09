@@ -55,11 +55,13 @@ namespace SpreadsheetGUI
         }
 
         /// <summary>
-        /// Runs a form in this application context
+        /// Runs a form in this application context based on an existing spreadsheet from a given filepath
         /// </summary>
+        /// <param name="spreadsheet"></param>
+        /// <param name="filename"></param>
         public void RunNew(Spreadsheet spreadsheet, string filename)
         {
-            // Create the window and the controller
+            // Create the window and the controller which takes in the existing spreadsheet and its filename.
             SpreadsheetWindow window = new SpreadsheetWindow();
             new Controller(window, spreadsheet, filename);
 

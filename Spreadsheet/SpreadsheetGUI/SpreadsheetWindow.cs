@@ -186,13 +186,14 @@ namespace SpreadsheetGUI
 
         private void openToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            DialogResult result = openFileDialog.ShowDialog();
-            if (result == DialogResult.Yes || result == DialogResult.OK)
+            openFileDialog.ShowDialog();
+        }
+
+        private void openFileDialog_FileOk(object sender, CancelEventArgs e)
+        {
+            if (OpenEvent != null)
             {
-                if (OpenEvent != null)
-                {
-                    OpenEvent(openFileDialog.FileName);
-                }
+                OpenEvent(openFileDialog.FileName);
             }
         }
 

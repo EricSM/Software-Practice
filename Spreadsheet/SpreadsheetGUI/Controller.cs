@@ -49,9 +49,7 @@ namespace SpreadsheetGUI
             foreach (string cell in spreadsheet.GetNamesOfAllNonemptyCells())
             {
                 string[] rowAndCol = Regex.Split(cell, @"(\d+)");
-
-
-
+                
                 window.SetCell((rowAndCol[0].ToCharArray()[0] - 'A'), int.Parse(rowAndCol[1]) - 1, spreadsheet.GetCellValue(cell).ToString());
             }
             window.CellValue = spreadsheet.GetCellValue(window.CellName).ToString();

@@ -39,12 +39,13 @@ namespace ControllerTester
 
         public void DoClose()
         {
-            throw new NotImplementedException();
+            CalledDoClose = true;
         }
 
         public void SetCell(int col, int row, string content)
         {
-            throw new NotImplementedException();
+            CellContent = content;
+            CalledSetCell = true;
         }
     }
 }
